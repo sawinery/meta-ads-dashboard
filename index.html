@@ -575,10 +575,22 @@ function initDashboard(){
   var camps=[],seen={};
   allData.forEach(function(r){if(!seen[r.campaign]){seen[r.campaign]=true;camps.push(r.campaign);}});
   camps.sort();
-  activeCamp=camps[0];
 
+  // Restore last selected campaign from localStorage
+  var savedCamp=localStorage.getItem('dash_camp');
+  activeCamp=(savedCamp&&camps.indexOf(savedCamp)!==-1)?savedCamp:camps[0];
+
+  // Build date range from data — ensure clean YYYY-MM-DD strings
   var days=Object.keys(allData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
-  dateFrom=days[0]; dateTo=days[days.length-1];
+  var dataFrom=days[0];
+  var dataTo=days[days.length-1];
+
+  // Restore last date range from localStorage, clamped to data range
+  var savedFrom=localStorage.getItem('dash_from');
+  var savedTo=localStorage.getItem('dash_to');
+  dateFrom=(savedFrom&&savedFrom>=dataFrom&&savedFrom<=dataTo)?savedFrom:dataFrom;
+  dateTo=(savedTo&&savedTo>=dataFrom&&savedTo<=dataTo)?savedTo:dataTo;
+
   document.getElementById('dateFrom').value=dateFrom;
   document.getElementById('dateTo').value=dateTo;
   document.getElementById('dataStatus').textContent=activeCamp+' · '+dateFrom+' → '+dateTo;
@@ -754,6 +766,8 @@ function setPreset(p){
 function updateAll(){
   filteredData=allData.filter(function(r){return r.campaign===activeCamp&&(!dateFrom||r.day>=dateFrom)&&(!dateTo||r.day<=dateTo);});
   document.getElementById('dataStatus').textContent=activeCamp+' · '+dateFrom+' → '+dateTo;
+  // Persist state across page refreshes
+  try{localStorage.setItem('dash_camp',activeCamp);localStorage.setItem('dash_from',dateFrom);localStorage.setItem('dash_to',dateTo);}catch(e){}
   updateKPIs();drawLineChart();drawDonut();renderTable();
   if(drawerAdSet)renderDrawer();
 }
