@@ -445,7 +445,13 @@ async function sbFetch(path, opts){
     'Content-Type': 'application/json',
     'Prefer': opts && opts.prefer ? opts.prefer : 'return=minimal'
   };
-  var res = await fetch(url, Object.assign({headers:headers}, opts||{}));
+  // Build fetch options without the custom 'prefer' key
+  var fetchOpts = {headers: headers};
+  if(opts){
+    if(opts.method) fetchOpts.method = opts.method;
+    if(opts.body) fetchOpts.body = opts.body;
+  }
+  var res = await fetch(url, fetchOpts);
   if(!res.ok){
     var t = await res.text();
     throw new Error(t);
@@ -479,18 +485,34 @@ async function loadCustomData(){
 }
 
 async function upsertCustom(adSet, adName, fields){
-  // Use empty string instead of null so the unique index works correctly
   var adNameKey = adName || '';
-  var payload = Object.assign({ad_set: adSet, ad_name: adNameKey}, fields);
-  await sbFetch('custom_data?on_conflict=ad_set,ad_name', {
-    method:'POST',
-    prefer:'resolution=merge-duplicates,return=minimal',
-    body: JSON.stringify(payload)
-  });
+  // First try to update existing row
+  var existing = await sbFetch(
+    'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=eq.'+encodeURIComponent(adNameKey),
+    {method:'GET', prefer:'return=representation'}
+  );
+  if(existing && existing.length > 0){
+    // Update
+    var payload = Object.assign({}, fields, {updated_at: new Date().toISOString()});
+    await sbFetch(
+      'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=eq.'+encodeURIComponent(adNameKey),
+      {method:'PATCH', prefer:'return=minimal', body: JSON.stringify(payload)}
+    );
+  } else {
+    // Insert
+    var payload = Object.assign({ad_set: adSet, ad_name: adNameKey}, fields);
+    await sbFetch('custom_data', {
+      method:'POST', prefer:'return=minimal', body: JSON.stringify(payload)
+    });
+  }
 }
 
 async function clearAdData(){
-  await sbFetch('ad_data?id=neq.00000000-0000-0000-0000-000000000000', {method:'DELETE'});
+  // Delete all rows and wait for confirmation
+  await sbFetch('ad_data?spend=gte.0', {method:'DELETE'});
+  await sbFetch('ad_data?spend=lt.0', {method:'DELETE'});
+  // Small delay to ensure delete is committed before insert
+  await new Promise(function(resolve){setTimeout(resolve, 800);});
 }
 
 async function insertAdData(rows){
@@ -516,7 +538,7 @@ window.addEventListener('load', async function(){
     if(adRows && adRows.length > 0){
       allData = adRows.map(function(r){
         return {
-          day: r.day, campaign: r.campaign, adSet: r.ad_set, ad: r.ad,
+          day: String(r.day||'').slice(0,10), campaign: r.campaign, adSet: r.ad_set, ad: r.ad,
           spend: +r.spend||0, purchases: +r.purchases||0, conv_val: +r.conv_val||0,
           aov: +r.aov||0, reach: +r.reach||0, impressions: +r.impressions||0,
           freq: +r.freq||0, ctr: +r.ctr||0, cpm: +r.cpm||0, atc: +r.atc||0,
@@ -617,7 +639,7 @@ function processCSVFile(file){
     try {
       await clearAdData();
       var dbRows = result.map(function(r){
-        return {day:r.day,campaign:r.campaign,ad_set:r.adSet,ad:r.ad,
+        return {day:String(r.day).slice(0,10),campaign:r.campaign,ad_set:r.adSet,ad:r.ad,
           spend:r.spend,purchases:r.purchases,conv_val:r.conv_val,aov:r.aov,
           reach:r.reach,impressions:r.impressions,freq:r.freq,ctr:r.ctr,
           cpm:r.cpm,atc:r.atc,lp_views:r.lp_views,hook_rate:r.hook_rate,
