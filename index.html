@@ -491,24 +491,21 @@ async function loadCustomData(){
 
 async function upsertCustom(adSet, adName, fields){
   var adNameKey = adName || '';
-  // First try to update existing row
-  var existing = await sbFetch(
-    'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=eq.'+encodeURIComponent(adNameKey),
-    {method:'GET', prefer:'return=representation'}
-  );
+  // Check for existing row — handle both null and empty string ad_name
+  var filterNull = 'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=is.null';
+  var filterEmpty = 'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=eq.'+encodeURIComponent(adNameKey);
+  var query = adNameKey === '' ? filterNull : filterEmpty;
+
+  var existing = await sbFetch(query, {method:'GET', prefer:'return=representation'});
+
   if(existing && existing.length > 0){
-    // Update
+    // Row exists — PATCH it
     var payload = Object.assign({}, fields, {updated_at: new Date().toISOString()});
-    await sbFetch(
-      'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=eq.'+encodeURIComponent(adNameKey),
-      {method:'PATCH', prefer:'return=minimal', body: JSON.stringify(payload)}
-    );
+    await sbFetch(query, {method:'PATCH', prefer:'return=minimal', body: JSON.stringify(payload)});
   } else {
-    // Insert
-    var payload = Object.assign({ad_set: adSet, ad_name: adNameKey}, fields);
-    await sbFetch('custom_data', {
-      method:'POST', prefer:'return=minimal', body: JSON.stringify(payload)
-    });
+    // No row yet — INSERT, using null for ad_name when empty
+    var payload = Object.assign({ad_set: adSet, ad_name: adNameKey||null}, fields);
+    await sbFetch('custom_data', {method:'POST', prefer:'return=minimal', body: JSON.stringify(payload)});
   }
 }
 
@@ -543,7 +540,7 @@ window.addEventListener('load', async function(){
     if(adRows && adRows.length > 0){
       allData = adRows.map(function(r){
         return {
-          day: String(r.day||'').slice(0,10), campaign: r.campaign, adSet: r.ad_set, ad: r.ad,
+          day: String(r.day||'').slice(0,10).trim(), campaign: (r.campaign||'').trim(), adSet: (r.ad_set||'').trim(), ad: (r.ad||'').trim(),
           spend: +r.spend||0, purchases: +r.purchases||0, conv_val: +r.conv_val||0,
           aov: +r.aov||0, reach: +r.reach||0, impressions: +r.impressions||0,
           freq: +r.freq||0, ctr: +r.ctr||0, cpm: +r.cpm||0, atc: +r.atc||0,
@@ -581,7 +578,7 @@ function initDashboard(){
   activeCamp=(savedCamp&&camps.indexOf(savedCamp)!==-1)?savedCamp:camps[0];
 
   // Build date range from data — ensure clean YYYY-MM-DD strings
-  var days=Object.keys(allData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
+  var days=Object.keys(allData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   var dataFrom=days[0];
   var dataTo=days[days.length-1];
 
@@ -734,14 +731,14 @@ function renderCampBar(camps){
 document.getElementById('searchInput').addEventListener('input',function(e){searchTerm=e.target.value.toLowerCase();renderTable();});
 function onDateChange(){dateFrom=document.getElementById('dateFrom').value;dateTo=document.getElementById('dateTo').value;updateAll();}
 function resetDates(){
-  var days=Object.keys(allData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
+  var days=Object.keys(allData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   dateFrom=days[0];dateTo=days[days.length-1];
   document.getElementById('dateFrom').value=dateFrom;
   document.getElementById('dateTo').value=dateTo;
   updateAll();
 }
 function setPreset(p){
-  var allDays=Object.keys(allData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
+  var allDays=Object.keys(allData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   var lastInData=allDays[allDays.length-1];
   var today=new Date();
   var fmt=function(dt){return dt.toISOString().slice(0,10);}; // kept for compat
@@ -764,7 +761,10 @@ function setPreset(p){
 }
 
 function updateAll(){
-  filteredData=allData.filter(function(r){return r.campaign===activeCamp&&(!dateFrom||r.day>=dateFrom)&&(!dateTo||r.day<=dateTo);});
+  filteredData=allData.filter(function(r){
+    var d=String(r.day).slice(0,10);
+    return r.campaign===activeCamp&&(!dateFrom||d>=dateFrom)&&(!dateTo||d<=dateTo);
+  });
   document.getElementById('dataStatus').textContent=activeCamp+' · '+dateFrom+' → '+dateTo;
   // Persist state across page refreshes
   try{localStorage.setItem('dash_camp',activeCamp);localStorage.setItem('dash_from',dateFrom);localStorage.setItem('dash_to',dateTo);}catch(e){}
@@ -797,7 +797,7 @@ function drawLineChart(){
   var W=canvas.parentElement.offsetWidth||500,H=180;
   canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
   ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  chartDays=Object.keys(filteredData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
+  chartDays=Object.keys(filteredData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   if(chartDays.length<2)return;
   var byAS={};filteredData.forEach(function(r){if(!byAS[r.adSet])byAS[r.adSet]=0;byAS[r.adSet]+=r.spend;});
   var topAS=Object.keys(byAS).sort(function(a,b){return byAS[b]-byAS[a];}).slice(0,6);
@@ -1176,7 +1176,7 @@ function renderVariations(rows,totalSpend){
 }
 
 function renderDailyPct(rows){
-  var allDays=Object.keys(filteredData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
+  var allDays=Object.keys(filteredData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   var campDaySpend={};filteredData.forEach(function(r){campDaySpend[r.day]=(campDaySpend[r.day]||0)+r.spend;});
   var asDaySpend={},asDayP={};
   rows.forEach(function(r){asDaySpend[r.day]=(asDaySpend[r.day]||0)+r.spend;asDayP[r.day]=(asDayP[r.day]||0)+r.purchases;});
