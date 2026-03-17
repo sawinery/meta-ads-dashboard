@@ -471,17 +471,18 @@ async function loadCustomData(){
     if(r.angle) map[key].angle = r.angle;
     if(r.awareness_level) map[key].awareness = r.awareness_level;
     if(r.learning) map[key].learning = r.learning;
-    if(r.ad_name && r.video_url) map[key].videos[r.ad_name] = r.video_url;
-    // top-level video (adSet video = top spender)
-    if(!r.ad_name && r.video_url) map[key].video_url = r.video_url;
+    if(r.ad_name && r.ad_name !== '' && r.video_url) map[key].videos[r.ad_name] = r.video_url;
+    // top-level video (adSet video = top spender) — ad_name is empty string
+    if((!r.ad_name || r.ad_name === '') && r.video_url) map[key].video_url = r.video_url;
   });
   return map;
 }
 
 async function upsertCustom(adSet, adName, fields){
-  // fields: {angle, awareness_level, learning, video_url}
-  var payload = Object.assign({ad_set: adSet, ad_name: adName||null}, fields);
-  await sbFetch('custom_data', {
+  // Use empty string instead of null so the unique index works correctly
+  var adNameKey = adName || '';
+  var payload = Object.assign({ad_set: adSet, ad_name: adNameKey}, fields);
+  await sbFetch('custom_data?on_conflict=ad_set,ad_name', {
     method:'POST',
     prefer:'resolution=merge-duplicates,return=minimal',
     body: JSON.stringify(payload)
