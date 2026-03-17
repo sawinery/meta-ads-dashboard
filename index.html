@@ -428,6 +428,11 @@ var ADMIN_PASSWORD = '456321';
 
 // ── STATE ──
 var COLORS=['#00d4aa','#0ea5e9','#f59e0b','#8b5cf6','#ef4444','#10b981','#f97316','#ec4899','#14b8a6','#a855f7','#f43f5e','#84cc16'];
+// Use local date string to avoid UTC timezone off-by-one issues
+function localDate(dt){
+  var d=dt||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 var allData=[], customData={};  // customData keyed by adSet name
 var isAdmin=false;
 var activeCamp=null, dateFrom='', dateTo='', searchTerm='', sortKey='spend', sortDir=-1;
@@ -727,12 +732,13 @@ function setPreset(p){
   var allDays=Object.keys(allData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
   var lastInData=allDays[allDays.length-1];
   var today=new Date();
-  var fmt=function(dt){return dt.toISOString().slice(0,10);};
-  var todayStr=fmt(today),from,to;
+  var fmt=function(dt){return dt.toISOString().slice(0,10);}; // kept for compat
+  // Use local date to avoid timezone off-by-one
+  var todayStr=localDate(today),from,to;
   if(p==='today'){from=to=todayStr;}
-  else if(p==='yesterday'){var y=new Date(today);y.setDate(y.getDate()-1);from=to=fmt(y);}
-  else if(p==='7d'){var s=new Date(today);s.setDate(s.getDate()-6);from=fmt(s);to=lastInData;}
-  else if(p==='30d'){var s=new Date(today);s.setDate(s.getDate()-29);from=fmt(s);to=lastInData;}
+  else if(p==='yesterday'){var y=new Date(today);y.setDate(y.getDate()-1);from=to=localDate(y);}
+  else if(p==='7d'){var s=new Date(today);s.setDate(s.getDate()-6);from=localDate(s);to=lastInData;}
+  else if(p==='30d'){var s=new Date(today);s.setDate(s.getDate()-29);from=localDate(s);to=lastInData;}
   else if(p==='month'){from=todayStr.slice(0,7)+'-01';to=lastInData;}
   from=from<allDays[0]?allDays[0]:from;
   to=to>lastInData?lastInData:to;
