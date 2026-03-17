@@ -519,7 +519,8 @@ window.addEventListener('load', async function(){
           spend: +r.spend||0, purchases: +r.purchases||0, conv_val: +r.conv_val||0,
           aov: +r.aov||0, reach: +r.reach||0, impressions: +r.impressions||0,
           freq: +r.freq||0, ctr: +r.ctr||0, cpm: +r.cpm||0, atc: +r.atc||0,
-          clicks: 0, lp_views: +r.lp_views||0, hook_rate: +r.hook_rate||0
+          clicks: +r.clicks||0, lp_views: +r.lp_views||0, hook_rate: +r.hook_rate||0,
+          cvr_pct: +r.cvr_pct||0
         };
       });
       initDashboard();
@@ -618,7 +619,8 @@ function processCSVFile(file){
         return {day:r.day,campaign:r.campaign,ad_set:r.adSet,ad:r.ad,
           spend:r.spend,purchases:r.purchases,conv_val:r.conv_val,aov:r.aov,
           reach:r.reach,impressions:r.impressions,freq:r.freq,ctr:r.ctr,
-          cpm:r.cpm,atc:r.atc,lp_views:r.lp_views,hook_rate:r.hook_rate};
+          cpm:r.cpm,atc:r.atc,lp_views:r.lp_views,hook_rate:r.hook_rate,
+          clicks:r.clicks,cvr_pct:r.cvr_pct};
       });
       await insertAdData(dbRows);
       allData = result;
@@ -650,6 +652,7 @@ function parseCSV(text){
   var purchC=col('results'),cvC=col('purchases conversion value'),reachC=col('reach'),impC=col('impressions');
   var ctrC=col('ctr (all)'),cpmC=col('cpm (cost per 1,000 impressions) (usd)'),atcC=col('adds to cart');
   var hookC=col('hook rate'),freqC=col('frequency'),lpC=col('website landing page views'),aovC=col('average purchases conversion value');
+  var clicksC=col('unique link clicks'),cvrC=col('cvr');
   var rows=[];
   for(var i=1;i<lines.length;i++){
     var c=parseCSVRow(lines[i]);
@@ -661,8 +664,10 @@ function parseCSV(text){
     var imp=pn(impC>=0?c[impC]:0),ctr=pn(ctrC>=0?c[ctrC]:0),cpm2=pn(cpmC>=0?c[cpmC]:0);
     var atc=pn(atcC>=0?c[atcC]:0),hook=pn(hookC>=0?c[hookC]:0),freq=pn(freqC>=0?c[freqC]:0);
     var lp=pn(lpC>=0?c[lpC]:0),aov=pn(aovC>=0?c[aovC]:0);
+    var clicks=pn(clicksC>=0?c[clicksC]:0);
+    var cvr_raw=pn(cvrC>=0?c[cvrC]:0);
     if(spend<=0&&purch<=0&&imp<=0) continue;
-    rows.push({day,campaign:camp,adSet,ad,spend,purchases:purch,conv_val:cv,aov,reach,impressions:imp,freq,ctr,cpm:cpm2,atc,clicks:0,lp_views:lp,hook_rate:hook});
+    rows.push({day,campaign:camp,adSet,ad,spend,purchases:purch,conv_val:cv,aov,reach,impressions:imp,freq,ctr,cpm:cpm2,atc,clicks:clicks,lp_views:lp,hook_rate:hook,cvr_pct:cvr_raw*100});
   }
   if(!rows.length) return{error:'No valid data rows found.'};
   return rows;
@@ -809,10 +814,14 @@ function getAdSets(){
   var by={};
   filteredData.forEach(function(r){
     var k=r.adSet;
-    if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,days:{},ads:{}};
+    if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,ctr_n:0,ctr_d:0,cvr_n:0,cvr_d:0,days:{},ads:{}};
     by[k].spend+=r.spend;by[k].p+=r.purchases;by[k].cv+=r.conv_val;by[k].reach+=r.reach;by[k].imp+=r.impressions;by[k].atc+=r.atc;by[k].lp_views+=r.lp_views;
     if(r.hook_rate>0){by[k].hook_n+=r.hook_rate*r.impressions;by[k].imp_h+=r.impressions;}
     if(r.aov>0){by[k].cv_sum+=r.aov;by[k].cv_cnt++;}
+    // CTR: weighted by impressions
+    if(r.ctr>0){by[k].ctr_n+=r.ctr*r.impressions;by[k].ctr_d+=r.impressions;}
+    // CVR: weighted by lp_views
+    if(r.cvr_pct>0&&r.lp_views>0){by[k].cvr_n+=r.cvr_pct*r.lp_views;by[k].cvr_d+=r.lp_views;}
     by[k].days[r.day]=true;by[k].ads[r.ad]=true;
   });
   return Object.keys(by).map(function(k){
@@ -820,9 +829,9 @@ function getAdSets(){
     return{adSet:a.adSet,spend:a.spend,purchases:a.p,conv_val:a.cv,
       cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,
       reach:a.reach,freq:a.reach>0?a.imp/a.reach:0,
-      ctr:a.imp>0?a.p/a.imp*100:0, // using purchases/impressions as proxy when clicks=0
+      ctr:a.ctr_d>0?a.ctr_n/a.ctr_d:0,
       hook:a.imp_h>0?a.hook_n/a.imp_h:0,
-      cvr:a.lp_views>0?a.p/a.lp_views*100:0,
+      cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,
       aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,
       atc:a.atc,days:d,ads:Object.keys(a.ads).length,
       spendPct:a.spend/campTotal*100};
@@ -1066,16 +1075,17 @@ async function saveDrawerCustom(explicit){
 function renderVariations(rows,totalSpend){
   var byAd={};
   rows.forEach(function(r){
-    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,days:{}};
+    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,cvr_n:0,cvr_d:0,days:{}};
     byAd[r.ad].spend+=r.spend;byAd[r.ad].p+=r.purchases;byAd[r.ad].cv+=r.conv_val;byAd[r.ad].reach+=r.reach;byAd[r.ad].imp+=r.impressions;byAd[r.ad].atc+=r.atc;byAd[r.ad].lp_views+=r.lp_views;
     if(r.freq>0){byAd[r.ad].freq_n+=r.freq*r.impressions;byAd[r.ad].freq_d+=r.impressions;}
     if(r.hook_rate>0){byAd[r.ad].hook_n+=r.hook_rate*r.impressions;byAd[r.ad].imp_h+=r.impressions;}
     if(r.aov>0){byAd[r.ad].cv_sum+=r.aov;byAd[r.ad].cv_cnt++;}
+    if(r.cvr_pct>0&&r.lp_views>0){byAd[r.ad].cvr_n+=r.cvr_pct*r.lp_views;byAd[r.ad].cvr_d+=r.lp_views;}
     byAd[r.ad].days[r.day]=true;
   });
   var ads=Object.keys(byAd).map(function(k){
     var a=byAd[k];
-    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
+    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
   }).sort(function(a,b){return b.spend-a.spend;});
 
   var ranked=ads.slice().sort(function(a,b){return b.roas-a.roas;});
