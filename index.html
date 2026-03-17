@@ -242,6 +242,13 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
   </div>
 </div>
 
+<!-- Admin bar (outside dashboard so it shows even with no data) -->
+<div class="admin-bar" id="adminBar" style="display:none;">
+  <div class="admin-bar-text">🔓 Admin mode active — edits save to database automatically</div>
+  <button class="btn-admin active" onclick="openUploadModal()">↑ Upload New CSV</button>
+  <button class="btn-admin" onclick="exitAdmin()" style="color:var(--muted2);">Exit</button>
+</div>
+
 <!-- Loading -->
 <div id="loadingScreen">
   <div class="spinner"></div>
@@ -251,13 +258,6 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 <!-- Dashboard -->
 <div id="dashboard">
 <div class="main">
-
-  <!-- Admin bar (only when in admin mode) -->
-  <div class="admin-bar" id="adminBar" style="display:none;">
-    <div class="admin-bar-text">🔓 Admin mode active — edits save to database automatically</div>
-    <button class="btn-admin active" onclick="openUploadModal()">↑ Upload New CSV</button>
-    <button class="btn-admin danger" onclick="exitAdmin()" style="color:var(--muted);">Exit</button>
-  </div>
 
   <!-- Campaign selector -->
   <div class="camp-bar" id="campBar"></div>
