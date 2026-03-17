@@ -13,39 +13,59 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── TOPBAR ── */
+/* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;border-bottom:1px solid var(--border);background:rgba(17,19,24,0.97);position:sticky;top:0;z-index:100;gap:16px;flex-wrap:wrap;}
 .logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);}
 .logo-dot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;}
 .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .data-status{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:4px 10px;border:1px solid var(--border2);border-radius:3px;}
 
-/* ── UPLOAD SCREEN ── */
-#uploadScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:40px;animation:fadeIn 0.4s ease;}
-.upload-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:48px 56px;max-width:560px;width:100%;text-align:center;}
-.upload-icon{width:64px;height:64px;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;}
-.upload-icon svg{width:28px;height:28px;stroke:var(--accent);}
-.upload-title{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--text);margin-bottom:8px;}
-.upload-subtitle{color:var(--muted2);font-size:13px;line-height:1.6;margin-bottom:32px;}
-.drop-zone{border:2px dashed var(--border2);border-radius:8px;padding:32px 24px;cursor:pointer;transition:all 0.2s;position:relative;margin-bottom:20px;}
+/* LOADING */
+#loadingScreen{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 57px);flex-direction:column;gap:16px;}
+.spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+.loading-text{font-family:var(--mono);font-size:12px;color:var(--muted2);}
+
+/* MAIN */
+#dashboard{display:none;animation:fadeIn 0.4s ease;}
+.main{padding:20px 28px;max-width:1600px;margin:0 auto;}
+
+/* ADMIN BAR */
+.admin-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;margin-bottom:16px;}
+.admin-bar-text{font-family:var(--mono);font-size:11px;color:var(--muted2);flex:1;}
+.btn-admin{padding:4px 12px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px;}
+.btn-admin:hover{border-color:var(--accent);color:var(--accent);}
+.btn-admin.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.08);}
+.lock-icon{font-size:12px;}
+
+/* PASSWORD MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:32px;width:360px;animation:fadeIn 0.2s ease;}
+.modal-title{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.modal-sub{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:20px;}
+.modal-input{width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:4px;font-family:var(--mono);font-size:13px;outline:none;margin-bottom:12px;}
+.modal-input:focus{border-color:var(--accent);}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-err{font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:10px;display:none;}
+.btn{padding:5px 14px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:11px;cursor:pointer;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600;}
+.btn.primary:hover{background:#00ffcc;}
+.btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.08);}
+.btn.danger{border-color:var(--red);color:var(--red);}
+.btn.danger:hover{background:rgba(239,68,68,0.1);}
+
+/* CSV UPLOAD MODAL */
+.upload-modal{width:480px;}
+.drop-zone{border:2px dashed var(--border2);border-radius:8px;padding:28px 20px;cursor:pointer;transition:all 0.2s;position:relative;margin-bottom:12px;text-align:center;}
 .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(0,212,170,0.04);}
 .drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .drop-zone-text{font-family:var(--mono);font-size:12px;color:var(--muted2);pointer-events:none;}
 .drop-zone-text span{color:var(--accent);}
-.upload-hint{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
-.upload-cols{display:flex;gap:12px;margin-top:24px;text-align:left;flex-wrap:wrap;}
-.upload-col-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 8px;font-family:var(--mono);font-size:10px;color:var(--muted2);}
-.error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:10px 14px;font-family:var(--mono);font-size:11px;color:#ef4444;margin-top:16px;display:none;text-align:left;}
-
-/* ── MAIN DASHBOARD ── */
-#dashboard{display:none;animation:fadeIn 0.4s ease;}
-.main{padding:20px 28px;max-width:1500px;margin:0 auto;}
-
-/* Upload banner (shown in dashboard) */
-.upload-banner{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;margin-bottom:16px;}
-.upload-banner-text{font-family:var(--mono);font-size:11px;color:var(--muted2);flex:1;}
-.btn-upload-new{padding:4px 12px;background:none;border:1px solid var(--border2);color:var(--accent);border-radius:3px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.15s;}
-.btn-upload-new:hover{border-color:var(--accent);background:rgba(0,212,170,0.06);}
+.upload-warning{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--warn);margin-bottom:12px;}
+.error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:11px;color:#ef4444;display:none;}
+.progress-bar{height:3px;background:var(--border2);border-radius:3px;margin-top:12px;display:none;}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width 0.3s;}
 
 /* Campaign selector */
 .camp-bar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
@@ -53,17 +73,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .camp-chip:hover{border-color:var(--muted2);color:var(--text);}
 .camp-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.08);font-weight:600;}
 
-/* Date + search bar */
+/* Date + search */
 .filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
 .filter-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;}
 .date-input{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:3px;font-family:var(--mono);font-size:11px;outline:none;cursor:pointer;}
 .date-input:focus{border-color:var(--accent);}
 .date-input::-webkit-calendar-picker-indicator{filter:invert(0.5);cursor:pointer;}
-.btn{padding:5px 12px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:11px;cursor:pointer;}
-.btn:hover{border-color:var(--accent);color:var(--accent);}
-.btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600;}
-.btn.primary:hover{background:#00ffcc;}
-.btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.08);}
 .search-input{padding:5px 12px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:3px;font-family:var(--mono);font-size:11px;outline:none;width:200px;margin-left:auto;}
 .search-input:focus{border-color:var(--accent);}
 
@@ -76,11 +91,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .kpi.yellow::before{background:var(--warn);}
 .kpi.blue::before{background:var(--accent2);}
 .kpi.purple::before{background:var(--purple);}
-.kpi-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.kpi-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
 .kpi-val{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--text);line-height:1;margin-bottom:5px;}
 .kpi-sub{font-family:var(--mono);font-size:10px;color:var(--muted);}
 
-/* Charts row */
+/* Charts */
 .charts-row{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:20px;}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
 .panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
@@ -95,8 +110,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .legend-label{flex:1;font-size:11px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .legend-val{font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;}
 .legend-pct{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:32px;text-align:right;}
-
-/* Tooltip */
 .chart-tooltip{position:absolute;background:rgba(17,19,24,0.97);border:1px solid var(--border2);border-radius:5px;padding:10px 14px;font-family:var(--mono);font-size:11px;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:50;min-width:150px;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
 .chart-tooltip.visible{opacity:1;}
 .tt-date{color:var(--muted2);font-size:10px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border2);}
@@ -105,26 +118,43 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .tt-label{flex:1;color:var(--muted2);font-size:10px;}
 .tt-val{color:var(--text);font-weight:600;}
 
-/* Ad set table */
+/* Table */
 .adset-panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
 .adset-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;}
-th{font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:left;padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;background:var(--surface2);}
+th{font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:left;padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;background:var(--surface2);position:relative;}
 th:hover{color:var(--accent);}
 th.sorted{color:var(--accent);}
-td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle;}
+td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
-tr.adset-row:hover td{background:rgba(255,255,255,0.025);cursor:pointer;}
+tr.adset-row:hover td{background:rgba(255,255,255,0.02);cursor:pointer;}
 .spend-bar{display:flex;align-items:center;gap:8px;}
 .bar-bg{width:80px;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;flex-shrink:0;}
 .bar-fill{height:100%;background:var(--accent);border-radius:3px;}
 .pct-label{font-family:var(--mono);font-size:11px;color:var(--muted2);min-width:36px;}
 
+/* Video cell */
+.video-cell{display:flex;align-items:center;gap:8px;}
+.play-btn{width:28px;height:28px;border-radius:50%;background:rgba(0,212,170,0.15);border:1px solid rgba(0,212,170,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.15s;}
+.play-btn:hover{background:rgba(0,212,170,0.3);}
+.play-btn svg{width:10px;height:10px;fill:var(--accent);margin-left:2px;}
+.add-video-btn{font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;padding:3px 7px;border:1px dashed var(--border2);border-radius:3px;white-space:nowrap;}
+.add-video-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Editable cell */
+.editable-cell{position:relative;}
+.editable-val{min-height:20px;cursor:text;border-radius:3px;padding:2px 4px;transition:background 0.15s;font-size:12px;line-height:1.4;}
+.editable-val:hover{background:var(--surface2);}
+.editable-val.empty{color:var(--muted);font-style:italic;font-size:11px;}
+.editable-val.editing{background:var(--surface2);outline:1px solid var(--accent);cursor:text;}
+.edit-indicator{width:5px;height:5px;border-radius:50%;background:var(--accent);position:absolute;top:4px;right:4px;opacity:0;}
+.admin-mode .edit-indicator{opacity:0.6;}
+
 /* Drawer */
 .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;}
 .drawer-overlay.open{display:block;}
-.drawer{position:fixed;right:0;top:0;bottom:0;width:820px;background:var(--surface);border-left:1px solid var(--border);z-index:201;transform:translateX(100%);transition:transform 0.22s ease;display:flex;flex-direction:column;}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:860px;background:var(--surface);border-left:1px solid var(--border);z-index:201;transform:translateX(100%);transition:transform 0.22s ease;display:flex;flex-direction:column;}
 .drawer.open{transform:translateX(0);}
 .drawer-header{padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .drawer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;}
@@ -137,15 +167,26 @@ tr.adset-row:hover td{background:rgba(255,255,255,0.025);cursor:pointer;}
 .dkpi:last-child{border-right:none;}
 .dkpi-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;margin-bottom:5px;}
 .dkpi-val{font-family:var(--mono);font-size:18px;font-weight:600;}
+
+/* Drawer custom fields */
+.drawer-custom{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;}
+.custom-field{flex:1;min-width:180px;}
+.custom-field-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;}
+.custom-field-input{width:100%;padding:6px 10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:4px;font-family:var(--sans);font-size:12px;outline:none;resize:vertical;}
+.custom-field-input:focus{border-color:var(--accent);}
+.custom-field-input[readonly]{opacity:0.5;cursor:default;}
+.save-custom-btn{align-self:flex-end;padding:5px 14px;background:var(--accent);color:#000;border:none;border-radius:3px;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:600;margin-top:18px;}
+.save-custom-btn:hover{background:#00ffcc;}
+
 .drawer-tabs{display:flex;border-bottom:1px solid var(--border);border-top:1px solid var(--border);flex-shrink:0;}
 .dtab{padding:10px 20px;font-family:var(--mono);font-size:11px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
 .dtab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .drawer-body{flex:1;overflow-y:auto;overflow-x:auto;}
 
-/* Ad variation cards */
-.ad-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:16px;}
+/* Ad cards */
+.ad-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px;}
 .ad-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px;cursor:default;}
-.ad-card-name{font-size:11px;color:var(--text);line-height:1.4;margin-bottom:12px;font-weight:500;}
+.ad-card-name{font-size:11px;color:var(--text);line-height:1.4;margin-bottom:10px;font-weight:500;}
 .ad-metric{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
 .ad-metric:last-child{border-bottom:none;}
 .ad-metric-label{font-family:var(--mono);font-size:10px;color:var(--muted2);display:flex;align-items:center;gap:4px;}
@@ -155,25 +196,38 @@ tr.adset-row:hover td{background:rgba(255,255,255,0.025);cursor:pointer;}
 .rank-2{background:rgba(14,165,233,0.12);color:var(--accent2);}
 .rank-3{background:rgba(107,114,128,0.15);color:var(--muted2);}
 
+/* Video in card */
+.ad-video-wrap{margin-bottom:10px;border-radius:6px;overflow:hidden;background:#000;position:relative;}
+.ad-video-wrap video{width:100%;max-height:160px;display:block;}
+.ad-video-placeholder{padding:10px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed var(--border2);border-radius:5px;margin-bottom:10px;cursor:pointer;}
+.ad-video-placeholder span{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.ad-video-placeholder:hover{border-color:var(--accent);}
+.ad-video-placeholder:hover span{color:var(--accent);}
+
+/* Video modal */
+.video-modal{width:680px;max-width:95vw;}
+.video-modal video{width:100%;border-radius:6px;background:#000;margin-bottom:12px;display:none;}
+.video-modal iframe{width:100%;height:360px;border-radius:6px;border:none;margin-bottom:12px;display:none;}
+.video-url-input{width:100%;padding:7px 10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:4px;font-family:var(--mono);font-size:11px;outline:none;margin-bottom:10px;}
+.video-url-input:focus{border-color:var(--accent);}
+
 /* Metric tooltips */
 .tip{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid var(--border2);color:var(--muted);font-size:9px;font-family:var(--sans);cursor:help;flex-shrink:0;position:relative;font-style:normal;line-height:1;}
 .tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:11px;line-height:1.5;padding:7px 10px;border-radius:5px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.6);pointer-events:none;width:200px;white-space:normal;text-transform:none;letter-spacing:0;font-weight:400;opacity:0;transition:opacity 0.15s;}
 .tip::before{content:'';position:absolute;bottom:calc(100% + 1px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--border2);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.15s;}
 .tip:hover::after,.tip:hover::before{opacity:1;}
-
-/* KPI tooltip — flip to open downward */
-.kpi-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
 .kpi .tip::after{bottom:auto;top:calc(100% + 6px);}
 .kpi .tip::before{bottom:auto;top:calc(100% + 1px);border-top-color:transparent;border-bottom-color:var(--border2);}
-
-/* Table th tooltip — open downward, align left */
-th{position:relative;}
 th .tip::after{bottom:auto;top:calc(100% + 6px);left:0;transform:none;}
 th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border-top-color:transparent;border-bottom-color:var(--border2);}
 
-/* Responsive */
-@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);},.charts-row{grid-template-columns:1fr;}.drawer{width:100%;}}
-@media(max-width:600px){.kpi-row{grid-template-columns:1fr 1fr;}}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--text);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);transform:translateY(16px);opacity:0;transition:all 0.25s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--accent);color:var(--accent);}
+.toast.error{border-color:var(--red);color:var(--red);}
+
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);}.charts-row{grid-template-columns:1fr;}.drawer{width:100%;}}
 </style>
 </head>
 <body>
@@ -181,53 +235,28 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 <div class="topbar">
   <div class="logo"><div class="logo-dot"></div>META ADS · DASHBOARD</div>
   <div class="topbar-right">
-    <div class="data-status" id="dataStatus">No data loaded</div>
+    <div class="data-status" id="dataStatus">Loading…</div>
+    <button class="btn-admin" id="adminBtn" onclick="openPasswordModal()">
+      <span class="lock-icon">🔒</span><span id="adminBtnLabel">Admin</span>
+    </button>
   </div>
 </div>
 
-<!-- ── UPLOAD SCREEN ── -->
-<div id="uploadScreen">
-  <div class="upload-card">
-    <div class="upload-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 14.5V17a2 2 0 002 2h12a2 2 0 002-2v-2.5M12 3v11M8.5 9.5L12 6l3.5 3.5"/>
-      </svg>
-    </div>
-    <div class="upload-title">Upload your Meta Ads CSV</div>
-    <div class="upload-subtitle">Export your ad data from Meta Ads Manager and drop the CSV file here. The dashboard will automatically parse and visualise your campaigns.</div>
-    <div class="drop-zone" id="dropZone">
-      <input type="file" accept=".csv" id="csvInput">
-      <div class="drop-zone-text">
-        Drop CSV file here or <span>click to browse</span>
-      </div>
-    </div>
-    <div class="upload-hint">Required columns from Meta Ads Manager export</div>
-    <div class="upload-cols">
-      <span class="upload-col-chip">Reporting starts</span>
-      <span class="upload-col-chip">Amount spent (USD)</span>
-      <span class="upload-col-chip">Results</span>
-      <span class="upload-col-chip">Purchases conversion value</span>
-      <span class="upload-col-chip">Reach</span>
-      <span class="upload-col-chip">Impressions</span>
-      <span class="upload-col-chip">CTR (all)</span>
-      <span class="upload-col-chip">Adds to cart</span>
-      <span class="upload-col-chip">Hook Rate</span>
-      <span class="upload-col-chip">Campaign name</span>
-      <span class="upload-col-chip">Ad set name</span>
-      <span class="upload-col-chip">Ad name</span>
-    </div>
-    <div class="error-msg" id="errorMsg"></div>
-  </div>
+<!-- Loading -->
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading dashboard data…</div>
 </div>
 
-<!-- ── DASHBOARD ── -->
+<!-- Dashboard -->
 <div id="dashboard">
 <div class="main">
 
-  <!-- Upload new banner -->
-  <div class="upload-banner">
-    <div class="upload-banner-text" id="bannerText">—</div>
-    <button class="btn-upload-new" onclick="resetToUpload()">↑ Upload New CSV</button>
+  <!-- Admin bar (only when in admin mode) -->
+  <div class="admin-bar" id="adminBar" style="display:none;">
+    <div class="admin-bar-text">🔓 Admin mode active — edits save to database automatically</div>
+    <button class="btn-admin active" onclick="openUploadModal()">↑ Upload New CSV</button>
+    <button class="btn-admin danger" onclick="exitAdmin()" style="color:var(--muted);">Exit</button>
   </div>
 
   <!-- Campaign selector -->
@@ -242,21 +271,21 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     <button class="btn" onclick="resetDates()">✕ Reset</button>
     <button class="btn primary" onclick="onDateChange()">APPLY</button>
     <div style="display:flex;gap:4px;margin-left:4px;">
-      <button class="btn preset-btn" id="presetToday" onclick="setPreset('today')">Today</button>
-      <button class="btn preset-btn" id="presetYesterday" onclick="setPreset('yesterday')">Yesterday</button>
-      <button class="btn preset-btn" id="preset7d" onclick="setPreset('7d')">Last 7d</button>
-      <button class="btn preset-btn" id="preset30d" onclick="setPreset('30d')">Last 30d</button>
-      <button class="btn preset-btn" id="presetMonth" onclick="setPreset('month')">This Month</button>
+      <button class="btn" id="presetToday" onclick="setPreset('today')">Today</button>
+      <button class="btn" id="presetYesterday" onclick="setPreset('yesterday')">Yesterday</button>
+      <button class="btn" id="preset7d" onclick="setPreset('7d')">Last 7d</button>
+      <button class="btn" id="preset30d" onclick="setPreset('30d')">Last 30d</button>
+      <button class="btn" id="presetMonth" onclick="setPreset('month')">This Month</button>
     </div>
-    <input class="search-input" id="searchInput" placeholder="Search ad sets...">
+    <input class="search-input" id="searchInput" placeholder="Search ad sets…">
   </div>
 
   <!-- KPIs -->
   <div class="kpi-row">
     <div class="kpi green"><div class="kpi-label">Spend<i class="tip" data-tip="Total amount spent on ads in the selected period.">?</i></div><div class="kpi-val" id="kpiSpend">-</div><div class="kpi-sub" id="kpiSpendSub">-</div></div>
-    <div class="kpi yellow"><div class="kpi-label">ROAS<i class="tip" data-tip="Return on Ad Spend. Purchase value ÷ spend. A ROAS of 3x means $3 revenue per $1 spent.">?</i></div><div class="kpi-val" id="kpiRoas">-</div><div class="kpi-sub" id="kpiRoasSub">-</div></div>
+    <div class="kpi yellow"><div class="kpi-label">ROAS<i class="tip" data-tip="Return on Ad Spend. Purchase value ÷ spend. 3x means $3 revenue per $1 spent.">?</i></div><div class="kpi-val" id="kpiRoas">-</div><div class="kpi-sub" id="kpiRoasSub">-</div></div>
     <div class="kpi red"><div class="kpi-label">CPA<i class="tip" data-tip="Cost Per Acquisition. Total spend ÷ purchases. Lower is better.">?</i></div><div class="kpi-val" id="kpiCpa">-</div><div class="kpi-sub" id="kpiCpaSub">-</div></div>
-    <div class="kpi blue"><div class="kpi-label">Purchase Value<i class="tip" data-tip="Total purchase conversion value — revenue attributed to your ads in this period.">?</i></div><div class="kpi-val" id="kpiVal">-</div><div class="kpi-sub" id="kpiValSub">-</div></div>
+    <div class="kpi blue"><div class="kpi-label">Purchase Value<i class="tip" data-tip="Total purchase conversion value — revenue attributed to your ads.">?</i></div><div class="kpi-val" id="kpiVal">-</div><div class="kpi-sub" id="kpiValSub">-</div></div>
     <div class="kpi purple"><div class="kpi-label">Purchases<i class="tip" data-tip="Total number of purchase conversions attributed to your ads.">?</i></div><div class="kpi-val" id="kpiP">-</div><div class="kpi-sub" id="kpiPSub">-</div></div>
   </div>
 
@@ -286,7 +315,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     </div>
   </div>
 
-  <!-- Ad Set Table -->
+  <!-- Table -->
   <div class="adset-panel">
     <div class="adset-header">
       <span class="panel-title">Ad Set Performance <span id="tableCount" style="color:var(--muted);margin-left:8px;font-weight:400;"></span></span>
@@ -295,19 +324,23 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
       <table>
         <thead><tr>
           <th onclick="sortTable('adSet')">AD SET ↕</th>
-          <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend in this period.">?</i></th>
-          <th>SPEND %<i class="tip" data-tip="This ad set's share of total campaign spend.">?</i></th>
-          <th onclick="sortTable('roas')">ROAS ↕<i class="tip" data-tip="Return on Ad Spend. Purchase value ÷ spend.">?</i></th>
-          <th onclick="sortTable('cpa')">CPA ↕<i class="tip" data-tip="Cost Per Acquisition. Spend ÷ purchases.">?</i></th>
-          <th onclick="sortTable('conv_val')">PURCH. VALUE ↕<i class="tip" data-tip="Total purchase conversion value (revenue) attributed to this ad set.">?</i></th>
-          <th onclick="sortTable('purchases')">PURCHASES ↕<i class="tip" data-tip="Total number of purchase conversions.">?</i></th>
-          <th onclick="sortTable('freq')">FREQ ↕<i class="tip" data-tip="Average frequency — how many times each person saw your ad.">?</i></th>
-          <th onclick="sortTable('ctr')">CTR ↕<i class="tip" data-tip="Click-Through Rate. Clicks ÷ impressions × 100. Measures ad relevance.">?</i></th>
-          <th onclick="sortTable('hook')">HOOK RATE ↕<i class="tip" data-tip="% of people who watched at least 3 seconds of your video. Measures how well the opening grabs attention.">?</i></th>
-          <th onclick="sortTable('cvr')">CVR ↕<i class="tip" data-tip="Conversion Rate. Purchases ÷ landing page views × 100.">?</i></th>
-          <th onclick="sortTable('aov')">AOV ↕<i class="tip" data-tip="Average Order Value. Average purchase conversion value per order.">?</i></th>
-          <th onclick="sortTable('atc')">ATC ↕<i class="tip" data-tip="Adds to Cart. Number of times people added a product to their cart.">?</i></th>
-          <th onclick="sortTable('days')">DAYS ↕<i class="tip" data-tip="Number of days this ad set had active spend in the selected period.">?</i></th>
+          <th>VIDEO</th>
+          <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
+          <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
+          <th onclick="sortTable('roas')">ROAS ↕<i class="tip" data-tip="Purchase value ÷ spend.">?</i></th>
+          <th onclick="sortTable('cpa')">CPA ↕<i class="tip" data-tip="Spend ÷ purchases.">?</i></th>
+          <th onclick="sortTable('conv_val')">PURCH. VALUE ↕<i class="tip" data-tip="Total revenue attributed.">?</i></th>
+          <th onclick="sortTable('purchases')">PURCHASES ↕<i class="tip" data-tip="Total purchase conversions.">?</i></th>
+          <th onclick="sortTable('freq')">FREQ ↕<i class="tip" data-tip="Avg times each person saw your ad.">?</i></th>
+          <th onclick="sortTable('ctr')">CTR ↕<i class="tip" data-tip="Clicks ÷ impressions × 100.">?</i></th>
+          <th onclick="sortTable('hook')">HOOK ↕<i class="tip" data-tip="% who watched 3+ seconds.">?</i></th>
+          <th onclick="sortTable('cvr')">CVR ↕<i class="tip" data-tip="Purchases ÷ landing page views × 100.">?</i></th>
+          <th onclick="sortTable('aov')">AOV ↕<i class="tip" data-tip="Average order value.">?</i></th>
+          <th onclick="sortTable('atc')">ATC ↕<i class="tip" data-tip="Adds to cart.">?</i></th>
+          <th onclick="sortTable('days')">DAYS ↕<i class="tip" data-tip="Days with active spend.">?</i></th>
+          <th>ANGLE<i class="tip" data-tip="Creative angle / positioning used in this ad set.">?</i></th>
+          <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
+          <th>LEARNING<i class="tip" data-tip="Notes and insights from testing this ad set.">?</i></th>
         </tr></thead>
         <tbody id="adSetBody"></tbody>
       </table>
@@ -329,6 +362,8 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     </div>
     <div class="drawer-kpis" id="drawerKpis"></div>
   </div>
+  <!-- Custom fields for the ad set -->
+  <div class="drawer-custom" id="drawerCustom"></div>
   <div class="drawer-tabs">
     <div class="dtab active" id="dtabVariations" onclick="setDTab('variations')">Ad Variations</div>
     <div class="dtab" id="dtabDaily" onclick="setDTab('daily')">Daily Spend %</div>
@@ -336,145 +371,176 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
   <div class="drawer-body" id="drawerBody"></div>
 </div>
 
+<!-- Password Modal -->
+<div class="modal-overlay" id="passwordModal">
+  <div class="modal">
+    <div class="modal-title">Admin Access</div>
+    <div class="modal-sub">Enter password to unlock edit mode</div>
+    <div class="modal-err" id="pwErr">Incorrect password</div>
+    <input class="modal-input" type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')submitPassword()">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('passwordModal')">Cancel</button>
+      <button class="btn primary" onclick="submitPassword()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload CSV Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal upload-modal">
+    <div class="modal-title">Upload New CSV</div>
+    <div class="modal-sub">This will replace all existing ad data for all users.</div>
+    <div class="upload-warning">⚠ Uploading will overwrite the current dataset. Custom fields (learnings, angles, videos) are preserved.</div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" accept=".csv" id="csvInput">
+      <div class="drop-zone-text">Drop CSV file here or <span>click to browse</span></div>
+    </div>
+    <div class="error-msg" id="uploadErr"></div>
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="btn" onclick="closeModal('uploadModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal video-modal">
+    <div class="modal-title" id="videoModalTitle">Ad Video</div>
+    <video id="videoPlayer" controls></video>
+    <iframe id="videoFrame" allowfullscreen></iframe>
+    <div style="margin-bottom:6px;font-family:var(--mono);font-size:11px;color:var(--muted2);" id="videoEditLabel" style="display:none;"></div>
+    <input class="video-url-input" id="videoUrlInput" placeholder="Paste Dropbox video link…" style="display:none;">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('videoModal')">Close</button>
+      <button class="btn primary" id="videoSaveBtn" onclick="saveVideoUrl()" style="display:none;">Save Link</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-// ── GLOBALS ──
+// ── CONFIG ──
+var SUPABASE_URL = 'https://matmvzgqctjdxbontbaw.supabase.co';
+var SUPABASE_KEY = 'sb_publishable__A1QnrVdv9IuSxhN3pVL8Q_TcSd5RFf';
+var ADMIN_PASSWORD = '456321';
+
+// ── STATE ──
 var COLORS=['#00d4aa','#0ea5e9','#f59e0b','#8b5cf6','#ef4444','#10b981','#f97316','#ec4899','#14b8a6','#a855f7','#f43f5e','#84cc16'];
-var allData=[];
+var allData=[], customData={};  // customData keyed by adSet name
+var isAdmin=false;
 var activeCamp=null, dateFrom='', dateTo='', searchTerm='', sortKey='spend', sortDir=-1;
 var chartMetric='spend', filteredData=[], chartDays=[], chartByCD={};
 var chartPad={l:52,r:16,t:12,b:28};
-var drawerAdSet=null, drawerCamp=null, drawerTab='variations';
+var drawerAdSet=null, drawerTab='variations';
+var videoTarget={adSet:null, ad:null}; // which row/card we're editing video for
 
-// ── CSV PARSER ──
-function parseCSV(text){
-  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
-  if(lines.length<2) return null;
-
-  // Parse header
-  var headers=parseCSVRow(lines[0]);
-
-  // Column index map (case-insensitive, trim quotes/spaces)
-  var idx={};
-  headers.forEach(function(h,i){ idx[h.toLowerCase().trim()]=i; });
-
-  // Required column finders
-  function col(name){ return idx[name.toLowerCase()]!==undefined ? idx[name.toLowerCase()] : -1; }
-
-  var dayCol     = col('reporting starts');
-  var campCol    = col('campaign name');
-  var adSetCol   = col('ad set name');
-  var adCol      = col('ad name');
-  var spendCol   = col('amount spent (usd)');
-  var purchCol   = col('results');
-  var convValCol = col('purchases conversion value');
-  var reachCol   = col('reach');
-  var impCol     = col('impressions');
-  var ctrCol     = col('ctr (all)');
-  var cpmCol     = col('cpm (cost per 1,000 impressions) (usd)');
-  var atcCol     = col('adds to cart');
-  var hookCol    = col('hook rate');
-  var freqCol    = col('frequency');
-  var lpCol      = col('website landing page views');
-  var aovCol     = col('average purchases conversion value');
-
-  if(dayCol<0||campCol<0||adSetCol<0||spendCol<0){
-    return{error:'Missing required columns. Make sure your export includes: Reporting starts, Campaign name, Ad set name, Amount spent (USD).'};
-  }
-
-  var rows=[];
-  for(var i=1;i<lines.length;i++){
-    var cells=parseCSVRow(lines[i]);
-    if(!cells||cells.length<3) continue;
-    var day   = cells[dayCol]||'';
-    var camp  = cells[campCol]||'';
-    var adSet = adSetCol>=0?(cells[adSetCol]||''):'Unknown Ad Set';
-    var ad    = adCol>=0?(cells[adCol]||adSet):adSet;
-    if(!day||!camp) continue;
-
-    var spend   = pn(spendCol>=0?cells[spendCol]:0);
-    var purch   = pn(purchCol>=0?cells[purchCol]:0);
-    var convVal = pn(convValCol>=0?cells[convValCol]:0);
-    var reach   = pn(reachCol>=0?cells[reachCol]:0);
-    var imp     = pn(impCol>=0?cells[impCol]:0);
-    var ctr     = pn(ctrCol>=0?cells[ctrCol]:0);
-    var cpm2    = pn(cpmCol>=0?cells[cpmCol]:0);
-    var atc     = pn(atcCol>=0?cells[atcCol]:0);
-    var hook    = pn(hookCol>=0?cells[hookCol]:0);
-    var freq    = pn(freqCol>=0?cells[freqCol]:0);
-    var lp      = pn(lpCol>=0?cells[lpCol]:0);
-    var aov     = pn(aovCol>=0?cells[aovCol]:0);
-
-    if(spend<=0&&purch<=0&&imp<=0) continue;
-
-    rows.push({
-      day:day, campaign:camp, adSet:adSet, ad:ad,
-      spend:spend, purchases:purch, conv_val:convVal, aov:aov,
-      reach:reach, impressions:imp, freq:freq,
-      ctr:ctr, cpm:cpm2, atc:atc, clicks:0,
-      lp_views:lp, hook_rate:hook
-    });
-  }
-  if(rows.length===0) return{error:'No valid data rows found. Check that your CSV has numeric data in the Amount spent column.'};
-  return rows;
-}
-
-// Parse a single CSV row respecting quoted fields
-function parseCSVRow(line){
-  var result=[], cur='', inQuote=false;
-  for(var i=0;i<line.length;i++){
-    var c=line[i];
-    if(c==='"'){
-      if(inQuote&&line[i+1]==='"'){cur+='"';i++;}
-      else inQuote=!inQuote;
-    } else if(c===','&&!inQuote){
-      result.push(cur.trim()); cur='';
-    } else { cur+=c; }
-  }
-  result.push(cur.trim());
-  return result;
-}
-
-function pn(v){
-  if(v===undefined||v===null||v==='') return 0;
-  var n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));
-  return isNaN(n)?0:n;
-}
-
-// ── UPLOAD HANDLING ──
-var dropZone=document.getElementById('dropZone');
-var csvInput=document.getElementById('csvInput');
-
-dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('drag-over');});
-dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('drag-over');});
-dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)processFile(f);});
-csvInput.addEventListener('change',function(){if(this.files[0])processFile(this.files[0]);});
-
-function processFile(file){
-  if(!file.name.toLowerCase().endsWith('.csv')){showError('Please upload a CSV file (.csv).');return;}
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var result=parseCSV(e.target.result);
-    if(!result){showError('Could not parse CSV. Please check the file format.');return;}
-    if(result.error){showError(result.error);return;}
-    hideError();
-    allData=result;
-    initDashboard(file.name);
+// ── SUPABASE HELPERS ──
+async function sbFetch(path, opts){
+  var url = SUPABASE_URL + '/rest/v1/' + path;
+  var headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': opts && opts.prefer ? opts.prefer : 'return=minimal'
   };
-  reader.readAsText(file);
+  var res = await fetch(url, Object.assign({headers:headers}, opts||{}));
+  if(!res.ok){
+    var t = await res.text();
+    throw new Error(t);
+  }
+  var ct = res.headers.get('content-type')||'';
+  if(ct.includes('json') && res.status !== 204){
+    return await res.json();
+  }
+  return null;
 }
 
-function showError(msg){var el=document.getElementById('errorMsg');el.textContent=msg;el.style.display='block';}
-function hideError(){document.getElementById('errorMsg').style.display='none';}
-
-function resetToUpload(){
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('uploadScreen').style.display='flex';
-  document.getElementById('dataStatus').textContent='No data loaded';
-  csvInput.value='';
+async function loadAdData(){
+  return await sbFetch('ad_data?select=*&order=day.asc&limit=100000', {method:'GET', prefer:'return=representation'});
 }
 
-function initDashboard(filename){
-  document.getElementById('uploadScreen').style.display='none';
+async function loadCustomData(){
+  var rows = await sbFetch('custom_data?select=*', {method:'GET', prefer:'return=representation'});
+  var map = {};
+  (rows||[]).forEach(function(r){
+    // key by adSet+ad for video, by adSet for everything else
+    var key = r.ad_set;
+    if(!map[key]) map[key] = {angle:'', awareness:'', learning:'', videos:{}};
+    if(r.angle) map[key].angle = r.angle;
+    if(r.awareness_level) map[key].awareness = r.awareness_level;
+    if(r.learning) map[key].learning = r.learning;
+    if(r.ad_name && r.video_url) map[key].videos[r.ad_name] = r.video_url;
+    // top-level video (adSet video = top spender)
+    if(!r.ad_name && r.video_url) map[key].video_url = r.video_url;
+  });
+  return map;
+}
+
+async function upsertCustom(adSet, adName, fields){
+  // fields: {angle, awareness_level, learning, video_url}
+  var payload = Object.assign({ad_set: adSet, ad_name: adName||null}, fields);
+  await sbFetch('custom_data', {
+    method:'POST',
+    prefer:'resolution=merge-duplicates,return=minimal',
+    body: JSON.stringify(payload)
+  });
+}
+
+async function clearAdData(){
+  await sbFetch('ad_data?id=neq.00000000-0000-0000-0000-000000000000', {method:'DELETE'});
+}
+
+async function insertAdData(rows){
+  // Insert in batches of 500
+  var batch=500;
+  for(var i=0;i<rows.length;i+=batch){
+    var chunk=rows.slice(i,i+batch);
+    await sbFetch('ad_data', {
+      method:'POST',
+      prefer:'return=minimal',
+      body: JSON.stringify(chunk)
+    });
+    var pct = Math.min(100, Math.round((i+chunk.length)/rows.length*100));
+    document.getElementById('progressFill').style.width = pct+'%';
+  }
+}
+
+// ── INIT ──
+window.addEventListener('load', async function(){
+  try {
+    var [adRows, custom] = await Promise.all([loadAdData(), loadCustomData()]);
+    customData = custom;
+    if(adRows && adRows.length > 0){
+      allData = adRows.map(function(r){
+        return {
+          day: r.day, campaign: r.campaign, adSet: r.ad_set, ad: r.ad,
+          spend: +r.spend||0, purchases: +r.purchases||0, conv_val: +r.conv_val||0,
+          aov: +r.aov||0, reach: +r.reach||0, impressions: +r.impressions||0,
+          freq: +r.freq||0, ctr: +r.ctr||0, cpm: +r.cpm||0, atc: +r.atc||0,
+          clicks: 0, lp_views: +r.lp_views||0, hook_rate: +r.hook_rate||0
+        };
+      });
+      initDashboard();
+    } else {
+      showEmpty();
+    }
+  } catch(e){
+    console.error(e);
+    showEmpty('Could not connect to database. Check your Supabase credentials.');
+  }
+});
+
+function showEmpty(msg){
+  document.getElementById('loadingScreen').innerHTML =
+    '<div style="font-family:var(--mono);font-size:12px;color:var(--muted2);text-align:center;max-width:400px;">'
+    + (msg || 'No data yet. Log in as admin and upload a CSV to get started.')
+    + '<br><br><button class="btn primary" onclick="openPasswordModal()" style="margin-top:8px;">Admin Login</button></div>';
+}
+
+function initDashboard(){
+  document.getElementById('loadingScreen').style.display='none';
   document.getElementById('dashboard').style.display='block';
 
   var camps=[],seen={};
@@ -486,26 +552,136 @@ function initDashboard(filename){
   dateFrom=days[0]; dateTo=days[days.length-1];
   document.getElementById('dateFrom').value=dateFrom;
   document.getElementById('dateTo').value=dateTo;
-
-  document.getElementById('bannerText').textContent=filename+' · '+allData.length.toLocaleString()+' rows · '+camps.length+' campaign'+(camps.length!==1?'s':'');
   document.getElementById('dataStatus').textContent=activeCamp+' · '+dateFrom+' → '+dateTo;
 
   renderCampBar(camps);
   updateAll();
 }
 
-// ── DASHBOARD LOGIC ──
+// ── ADMIN ──
+function openPasswordModal(){
+  if(isAdmin){exitAdmin();return;}
+  document.getElementById('pwInput').value='';
+  document.getElementById('pwErr').style.display='none';
+  openModal('passwordModal');
+  setTimeout(function(){document.getElementById('pwInput').focus();},100);
+}
+
+function submitPassword(){
+  var pw = document.getElementById('pwInput').value;
+  if(pw === ADMIN_PASSWORD){
+    isAdmin=true;
+    closeModal('passwordModal');
+    document.getElementById('adminBar').style.display='flex';
+    document.getElementById('adminBtnLabel').textContent='Admin ✓';
+    document.getElementById('adminBtn').classList.add('active');
+    document.body.classList.add('admin-mode');
+    renderTable();
+    if(drawerAdSet) renderDrawer();
+    showToast('Admin mode enabled','success');
+  } else {
+    document.getElementById('pwErr').style.display='block';
+  }
+}
+
+function exitAdmin(){
+  isAdmin=false;
+  document.getElementById('adminBar').style.display='none';
+  document.getElementById('adminBtnLabel').textContent='Admin';
+  document.getElementById('adminBtn').classList.remove('active');
+  document.body.classList.remove('admin-mode');
+  renderTable();
+  if(drawerAdSet) renderDrawer();
+}
+
+// ── UPLOAD ──
+function openUploadModal(){ openModal('uploadModal'); }
+
+var dropZone=document.getElementById('dropZone');
+var csvInput=document.getElementById('csvInput');
+dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('drag-over');});
+dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)processCSVFile(f);});
+csvInput.addEventListener('change',function(){if(this.files[0])processCSVFile(this.files[0]);});
+
+function processCSVFile(file){
+  if(!file.name.toLowerCase().endsWith('.csv')){showUploadErr('Please upload a .csv file');return;}
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var result=parseCSV(e.target.result);
+    if(!result||result.error){showUploadErr(result?result.error:'Could not parse CSV');return;}
+    document.getElementById('uploadErr').style.display='none';
+    document.getElementById('progressBar').style.display='block';
+    try {
+      await clearAdData();
+      var dbRows = result.map(function(r){
+        return {day:r.day,campaign:r.campaign,ad_set:r.adSet,ad:r.ad,
+          spend:r.spend,purchases:r.purchases,conv_val:r.conv_val,aov:r.aov,
+          reach:r.reach,impressions:r.impressions,freq:r.freq,ctr:r.ctr,
+          cpm:r.cpm,atc:r.atc,lp_views:r.lp_views,hook_rate:r.hook_rate};
+      });
+      await insertAdData(dbRows);
+      allData = result;
+      closeModal('uploadModal');
+      document.getElementById('progressBar').style.display='none';
+      csvInput.value='';
+      initDashboard();
+      showToast('CSV uploaded — '+result.length.toLocaleString()+' rows','success');
+    } catch(err){
+      showUploadErr('Upload failed: '+err.message);
+      document.getElementById('progressBar').style.display='none';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showUploadErr(m){var el=document.getElementById('uploadErr');el.textContent=m;el.style.display='block';}
+
+// ── CSV PARSER ──
+function parseCSV(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
+  if(lines.length<2) return null;
+  var headers=parseCSVRow(lines[0]);
+  var idx={};
+  headers.forEach(function(h,i){idx[h.toLowerCase().trim()]=i;});
+  function col(n){return idx[n.toLowerCase()]!==undefined?idx[n.toLowerCase()]:-1;}
+  var dayC=col('reporting starts'),campC=col('campaign name'),adSetC=col('ad set name'),adC=col('ad name'),spendC=col('amount spent (usd)');
+  if(dayC<0||campC<0||adSetC<0||spendC<0) return{error:'Missing required columns: Reporting starts, Campaign name, Ad set name, Amount spent (USD)'};
+  var purchC=col('results'),cvC=col('purchases conversion value'),reachC=col('reach'),impC=col('impressions');
+  var ctrC=col('ctr (all)'),cpmC=col('cpm (cost per 1,000 impressions) (usd)'),atcC=col('adds to cart');
+  var hookC=col('hook rate'),freqC=col('frequency'),lpC=col('website landing page views'),aovC=col('average purchases conversion value');
+  var rows=[];
+  for(var i=1;i<lines.length;i++){
+    var c=parseCSVRow(lines[i]);
+    if(!c||c.length<3) continue;
+    var day=c[dayC]||'',camp=c[campC]||'',adSet=adSetC>=0?(c[adSetC]||''):'Unknown',ad=adC>=0?(c[adC]||adSet):adSet;
+    if(!day||!camp) continue;
+    var spend=pn(c[spendC]);
+    var purch=pn(purchC>=0?c[purchC]:0),cv=pn(cvC>=0?c[cvC]:0),reach=pn(reachC>=0?c[reachC]:0);
+    var imp=pn(impC>=0?c[impC]:0),ctr=pn(ctrC>=0?c[ctrC]:0),cpm2=pn(cpmC>=0?c[cpmC]:0);
+    var atc=pn(atcC>=0?c[atcC]:0),hook=pn(hookC>=0?c[hookC]:0),freq=pn(freqC>=0?c[freqC]:0);
+    var lp=pn(lpC>=0?c[lpC]:0),aov=pn(aovC>=0?c[aovC]:0);
+    if(spend<=0&&purch<=0&&imp<=0) continue;
+    rows.push({day,campaign:camp,adSet,ad,spend,purchases:purch,conv_val:cv,aov,reach,impressions:imp,freq,ctr,cpm:cpm2,atc,clicks:0,lp_views:lp,hook_rate:hook});
+  }
+  if(!rows.length) return{error:'No valid data rows found.'};
+  return rows;
+}
+function parseCSVRow(line){
+  var r=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){var c=line[i];if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(c===','&&!inQ){r.push(cur.trim());cur='';}else cur+=c;}
+  r.push(cur.trim());return r;
+}
+function pn(v){if(v===undefined||v===null||v==='')return 0;var n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;}
+
+// ── DASHBOARD ──
 function renderCampBar(camps){
-  var bar=document.getElementById('campBar'); bar.innerHTML='';
+  var bar=document.getElementById('campBar');bar.innerHTML='';
   camps.forEach(function(c){
     var btn=document.createElement('button');
     btn.className='camp-chip'+(c===activeCamp?' active':'');
     btn.textContent=c;
-    btn.onclick=function(){
-      activeCamp=c;
-      document.querySelectorAll('.camp-chip').forEach(function(b){b.classList.toggle('active',b.textContent===c);});
-      updateAll();
-    };
+    btn.onclick=function(){activeCamp=c;document.querySelectorAll('.camp-chip').forEach(function(b){b.classList.toggle('active',b.textContent===c);});updateAll();};
     bar.appendChild(btn);
   });
 }
@@ -519,37 +695,30 @@ function resetDates(){
   document.getElementById('dateTo').value=dateTo;
   updateAll();
 }
-
 function setPreset(p){
   var allDays=Object.keys(allData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
   var lastInData=allDays[allDays.length-1];
   var today=new Date();
   var fmt=function(dt){return dt.toISOString().slice(0,10);};
-  var todayStr=fmt(today);
-  var from,to;
+  var todayStr=fmt(today),from,to;
   if(p==='today'){from=to=todayStr;}
   else if(p==='yesterday'){var y=new Date(today);y.setDate(y.getDate()-1);from=to=fmt(y);}
   else if(p==='7d'){var s=new Date(today);s.setDate(s.getDate()-6);from=fmt(s);to=lastInData;}
   else if(p==='30d'){var s=new Date(today);s.setDate(s.getDate()-29);from=fmt(s);to=lastInData;}
   else if(p==='month'){from=todayStr.slice(0,7)+'-01';to=lastInData;}
-  // Clamp to available data range
   from=from<allDays[0]?allDays[0]:from;
   to=to>lastInData?lastInData:to;
   dateFrom=from;dateTo=to;
   document.getElementById('dateFrom').value=from;
   document.getElementById('dateTo').value=to;
-  ['presetToday','presetYesterday','preset7d','preset30d','presetMonth'].forEach(function(id){
-    var el=document.getElementById(id);if(el)el.classList.remove('active');
-  });
+  ['presetToday','presetYesterday','preset7d','preset30d','presetMonth'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('active');});
   var ids={today:'presetToday',yesterday:'presetYesterday','7d':'preset7d','30d':'preset30d',month:'presetMonth'};
   if(ids[p]){var el=document.getElementById(ids[p]);if(el)el.classList.add('active');}
   updateAll();
 }
 
 function updateAll(){
-  filteredData=allData.filter(function(r){
-    return r.campaign===activeCamp&&(!dateFrom||r.day>=dateFrom)&&(!dateTo||r.day<=dateTo);
-  });
+  filteredData=allData.filter(function(r){return r.campaign===activeCamp&&(!dateFrom||r.day>=dateFrom)&&(!dateTo||r.day<=dateTo);});
   document.getElementById('dataStatus').textContent=activeCamp+' · '+dateFrom+' → '+dateTo;
   updateKPIs();drawLineChart();drawDonut();renderTable();
   if(drawerAdSet)renderDrawer();
@@ -560,121 +729,67 @@ function f2(n){return n.toLocaleString('en',{minimumFractionDigits:2,maximumFrac
 function fk(n){return n>=1000?(n/1000).toFixed(1)+'K':Math.round(n).toString();}
 
 function updateKPIs(){
-  var spend=0,p=0,cv=0,reach=0,imp=0,atc=0;
-  filteredData.forEach(function(r){spend+=r.spend;p+=r.purchases;cv+=r.conv_val;reach+=r.reach;imp+=r.impressions;atc+=r.atc;});
+  var spend=0,p=0,cv=0,imp=0,atc=0;
+  filteredData.forEach(function(r){spend+=r.spend;p+=r.purchases;cv+=r.conv_val;imp+=r.impressions;atc+=r.atc;});
   var days=Object.keys(filteredData.reduce(function(a,r){a[r.day]=1;return a;},{}));
-  var cpa=p>0?spend/p:0, roas=spend>0?cv/spend:0;
-  s('kpiSpend','$'+f2(spend));
-  s('kpiSpendSub',days.length+' days · $'+Math.round(spend/(days.length||1)).toLocaleString()+'/day avg');
-  s('kpiRoas',roas>0?roas.toFixed(2)+'x':'-');
-  s('kpiRoasSub','purchase value / spend');
-  s('kpiCpa',cpa>0?'$'+cpa.toFixed(2):'-');
-  s('kpiCpaSub',Math.round(p)+' purchases');
-  s('kpiVal','$'+Math.round(cv).toLocaleString());
-  s('kpiValSub','total revenue from ads');
-  s('kpiP',Math.round(p).toLocaleString());
-  s('kpiPSub',cpa>0?'$'+cpa.toFixed(2)+' each':'-');
+  var cpa=p>0?spend/p:0,roas=spend>0?cv/spend:0;
+  s('kpiSpend','$'+f2(spend));s('kpiSpendSub',days.length+' days · $'+Math.round(spend/(days.length||1)).toLocaleString()+'/day avg');
+  s('kpiRoas',roas>0?roas.toFixed(2)+'x':'-');s('kpiRoasSub','purchase value / spend');
+  s('kpiCpa',cpa>0?'$'+cpa.toFixed(2):'-');s('kpiCpaSub',Math.round(p)+' purchases');
+  s('kpiVal','$'+Math.round(cv).toLocaleString());s('kpiValSub','total revenue from ads');
+  s('kpiP',Math.round(p).toLocaleString());s('kpiPSub',cpa>0?'$'+cpa.toFixed(2)+' each':'-');
 }
 
-function setMetric(m,btn){
-  chartMetric=m;
-  document.querySelectorAll('.chart-tab').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  drawLineChart();
-}
+function setMetric(m,btn){chartMetric=m;document.querySelectorAll('.chart-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');drawLineChart();}
 
-function getChartVal(cd){
-  var v=chartByCD[cd];if(!v)return 0;
-  if(chartMetric==='spend')return v.spend;
-  if(chartMetric==='cpa')return v.p>0?v.spend/v.p:0;
-  if(chartMetric==='roas')return v.spend>0?v.cv/v.spend:0;
-  if(chartMetric==='reach')return v.reach;
-  return 0;
-}
+function getChartVal(cd){var v=chartByCD[cd];if(!v)return 0;if(chartMetric==='spend')return v.spend;if(chartMetric==='cpa')return v.p>0?v.spend/v.p:0;if(chartMetric==='roas')return v.spend>0?v.cv/v.spend:0;if(chartMetric==='reach')return v.reach;return 0;}
 
 function drawLineChart(){
-  var canvas=document.getElementById('lineChart');
-  var ctx=canvas.getContext('2d');
-  var dpr=window.devicePixelRatio||1;
+  var canvas=document.getElementById('lineChart'),ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1;
   var W=canvas.parentElement.offsetWidth||500,H=180;
   canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
   ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-
   chartDays=Object.keys(filteredData.reduce(function(a,r){a[r.day]=1;return a;},{})).sort();
   if(chartDays.length<2)return;
-
-  var byAS={};
-  filteredData.forEach(function(r){if(!byAS[r.adSet])byAS[r.adSet]=0;byAS[r.adSet]+=r.spend;});
+  var byAS={};filteredData.forEach(function(r){if(!byAS[r.adSet])byAS[r.adSet]=0;byAS[r.adSet]+=r.spend;});
   var topAS=Object.keys(byAS).sort(function(a,b){return byAS[b]-byAS[a];}).slice(0,6);
-
-  chartByCD={};
-  filteredData.forEach(function(r){
-    var k=r.adSet+'||'+r.day;
-    if(!chartByCD[k])chartByCD[k]={spend:0,p:0,cv:0,reach:0};
-    chartByCD[k].spend+=r.spend;chartByCD[k].p+=r.purchases;chartByCD[k].cv+=r.conv_val;chartByCD[k].reach+=r.reach;
-  });
-
-  var allVals=[];
-  topAS.forEach(function(as){chartDays.forEach(function(d){allVals.push(getChartVal(as+'||'+d));});});
+  chartByCD={};filteredData.forEach(function(r){var k=r.adSet+'||'+r.day;if(!chartByCD[k])chartByCD[k]={spend:0,p:0,cv:0,reach:0};chartByCD[k].spend+=r.spend;chartByCD[k].p+=r.purchases;chartByCD[k].cv+=r.conv_val;chartByCD[k].reach+=r.reach;});
+  var allVals=[];topAS.forEach(function(as){chartDays.forEach(function(d){allVals.push(getChartVal(as+'||'+d));});});
   var maxV=Math.max.apply(null,allVals.concat([0.01]));
   var pad=chartPad,cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
-
-  for(var gi=0;gi<=4;gi++){
-    var gy=pad.t+cH*(1-gi/4);
-    ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cW,gy);ctx.strokeStyle='#1e2530';ctx.lineWidth=1;ctx.stroke();
-    var lbl=maxV*gi/4;
-    var txt=chartMetric==='spend'||chartMetric==='cpa'?'$'+Math.round(lbl).toLocaleString():chartMetric==='roas'?lbl.toFixed(1)+'x':fk(lbl);
-    ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='right';ctx.fillText(txt,pad.l-5,gy+3);
-  }
-  var step=Math.ceil(chartDays.length/7);
-  ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
+  for(var gi=0;gi<=4;gi++){var gy=pad.t+cH*(1-gi/4);ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cW,gy);ctx.strokeStyle='#1e2530';ctx.lineWidth=1;ctx.stroke();var lbl=maxV*gi/4;var txt=chartMetric==='spend'||chartMetric==='cpa'?'$'+Math.round(lbl).toLocaleString():chartMetric==='roas'?lbl.toFixed(1)+'x':fk(lbl);ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='right';ctx.fillText(txt,pad.l-5,gy+3);}
+  var step=Math.ceil(chartDays.length/7);ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
   chartDays.forEach(function(d,i){if(i%step!==0&&i!==chartDays.length-1)return;ctx.fillText(d.slice(5),pad.l+(i/(chartDays.length-1))*cW,H-6);});
-
   topAS.forEach(function(as,ci){
     var pts=chartDays.map(function(d,i){return{x:pad.l+(i/(chartDays.length-1))*cW,y:pad.t+cH*(1-getChartVal(as+'||'+d)/maxV)};});
-    ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
-    ctx.lineTo(pts[pts.length-1].x,pad.t+cH);ctx.lineTo(pts[0].x,pad.t+cH);ctx.closePath();
-    ctx.fillStyle=ha(COLORS[ci%COLORS.length],0.07);ctx.fill();
-    ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
-    ctx.strokeStyle=COLORS[ci%COLORS.length];ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.stroke();
+    ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});ctx.lineTo(pts[pts.length-1].x,pad.t+cH);ctx.lineTo(pts[0].x,pad.t+cH);ctx.closePath();ctx.fillStyle=ha(COLORS[ci%COLORS.length],0.07);ctx.fill();
+    ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});ctx.strokeStyle=COLORS[ci%COLORS.length];ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.stroke();
   });
-
   s('lineTitle',chartMetric==='spend'?'Daily Spend by Ad Set':chartMetric==='roas'?'Daily ROAS by Ad Set':chartMetric==='cpa'?'Daily CPA by Ad Set':'Daily Reach by Ad Set');
 }
-
 function ha(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return'rgba('+r+','+g+','+b+','+a+')';}
 
-// Tooltip
 var lineCanvas=document.getElementById('lineChart');
 lineCanvas.addEventListener('mousemove',function(e){
   if(!chartDays||chartDays.length<2)return;
-  var rect=lineCanvas.getBoundingClientRect();
-  var mx=e.clientX-rect.left,pad=chartPad,W=lineCanvas.offsetWidth,cW=W-pad.l-pad.r;
+  var rect=lineCanvas.getBoundingClientRect(),mx=e.clientX-rect.left,pad=chartPad,W=lineCanvas.offsetWidth,cW=W-pad.l-pad.r;
   if(mx<pad.l||mx>pad.l+cW){hideTT();return;}
-  var idx=Math.round((mx-pad.l)/cW*(chartDays.length-1));
-  idx=Math.max(0,Math.min(chartDays.length-1,idx));
+  var idx=Math.max(0,Math.min(chartDays.length-1,Math.round((mx-pad.l)/cW*(chartDays.length-1))));
   var day=chartDays[idx];
   var byAS={};filteredData.forEach(function(r){if(!byAS[r.adSet])byAS[r.adSet]=0;byAS[r.adSet]+=r.spend;});
   var topAS=Object.keys(byAS).sort(function(a,b){return byAS[b]-byAS[a];}).slice(0,6);
   var tip=document.getElementById('chartTooltip');
   var html='<div class="tt-date">'+day+'</div>';
-  topAS.forEach(function(as,ci){
-    var v=getChartVal(as+'||'+day);if(v===0)return;
-    var fmt=chartMetric==='spend'||chartMetric==='cpa'?'$'+f2(v):chartMetric==='roas'?v.toFixed(2)+'x':fk(v);
-    html+='<div class="tt-row"><div class="tt-dot" style="background:'+COLORS[ci%COLORS.length]+';"></div><span class="tt-label">'+as.slice(0,28)+'</span><span class="tt-val">'+fmt+'</span></div>';
-  });
+  topAS.forEach(function(as,ci){var v=getChartVal(as+'||'+day);if(!v)return;var fmt=chartMetric==='spend'||chartMetric==='cpa'?'$'+f2(v):chartMetric==='roas'?v.toFixed(2)+'x':fk(v);html+='<div class="tt-row"><div class="tt-dot" style="background:'+COLORS[ci%COLORS.length]+'"></div><span class="tt-label">'+as.slice(0,26)+'</span><span class="tt-val">'+fmt+'</span></div>';});
   tip.innerHTML=html;
-  var tipX=idx/(chartDays.length-1)*cW+pad.l+10;
-  if(tipX+170>W)tipX-=190;
-  tip.style.left=tipX+'px';tip.style.top='8px';
-  tip.classList.add('visible');
+  var tipX=idx/(chartDays.length-1)*cW+pad.l+10;if(tipX+170>W)tipX-=190;
+  tip.style.left=tipX+'px';tip.style.top='8px';tip.classList.add('visible');
 });
 lineCanvas.addEventListener('mouseleave',hideTT);
 function hideTT(){document.getElementById('chartTooltip').classList.remove('visible');}
 
 function drawDonut(){
-  var byAS={};
-  filteredData.forEach(function(r){byAS[r.adSet]=(byAS[r.adSet]||0)+r.spend;});
+  var byAS={};filteredData.forEach(function(r){byAS[r.adSet]=(byAS[r.adSet]||0)+r.spend;});
   var sorted=Object.keys(byAS).map(function(k){return[k,byAS[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
   var total=sorted.reduce(function(s,x){return s+x[1];},0)||1;
   var canvas=document.getElementById('donutCanvas'),ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1;
@@ -686,13 +801,7 @@ function drawDonut(){
   ctx.fillStyle='#e2e8f0';ctx.font='600 12px IBM Plex Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$'+Math.round(total/1000)+'K',cx,cy-5);
   ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.fillText('TOTAL',cx,cy+9);
   var legend=document.getElementById('donutLegend');legend.innerHTML='';
-  sorted.forEach(function(item,i){
-    var pct=(item[1]/total*100).toFixed(1);
-    var div=document.createElement('div');div.className='legend-item';
-    var short=item[0].slice(0,30);
-    div.innerHTML='<div class="legend-dot" style="background:'+COLORS[i%COLORS.length]+'"></div><span class="legend-label" title="'+item[0]+'">'+short+'</span><span class="legend-val">$'+Math.round(item[1]).toLocaleString()+'</span><span class="legend-pct">'+pct+'%</span>';
-    legend.appendChild(div);
-  });
+  sorted.forEach(function(item,i){var pct=(item[1]/total*100).toFixed(1);var div=document.createElement('div');div.className='legend-item';div.innerHTML='<div class="legend-dot" style="background:'+COLORS[i%COLORS.length]+'"></div><span class="legend-label" title="'+item[0]+'">'+item[0].slice(0,28)+'</span><span class="legend-val">$'+Math.round(item[1]).toLocaleString()+'</span><span class="legend-pct">'+pct+'%</span>';legend.appendChild(div);});
 }
 
 function getAdSets(){
@@ -700,7 +809,7 @@ function getAdSets(){
   var by={};
   filteredData.forEach(function(r){
     var k=r.adSet;
-    if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,clicks:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,days:{},ads:{}};
+    if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,days:{},ads:{}};
     by[k].spend+=r.spend;by[k].p+=r.purchases;by[k].cv+=r.conv_val;by[k].reach+=r.reach;by[k].imp+=r.impressions;by[k].atc+=r.atc;by[k].lp_views+=r.lp_views;
     if(r.hook_rate>0){by[k].hook_n+=r.hook_rate*r.impressions;by[k].imp_h+=r.impressions;}
     if(r.aov>0){by[k].cv_sum+=r.aov;by[k].cv_cnt++;}
@@ -708,11 +817,25 @@ function getAdSets(){
   });
   return Object.keys(by).map(function(k){
     var a=by[k],d=Object.keys(a.days).length;
-    var cvr=a.lp_views>0?a.p/a.lp_views*100:0;
-    var hook=a.imp_h>0?a.hook_n/a.imp_h:0;
-    var aov=a.cv_cnt>0?a.cv_sum/a.cv_cnt:0;
-    return{adSet:a.adSet,spend:a.spend,purchases:a.p,conv_val:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.reach>0?a.imp/a.reach:0,ctr:a.imp>0?a.clicks/a.imp*100:0,atc:a.atc,cvr:cvr,hook:hook,aov:aov,days:d,ads:Object.keys(a.ads).length,spendPct:a.spend/campTotal*100};
+    return{adSet:a.adSet,spend:a.spend,purchases:a.p,conv_val:a.cv,
+      cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,
+      reach:a.reach,freq:a.reach>0?a.imp/a.reach:0,
+      ctr:a.imp>0?a.p/a.imp*100:0, // using purchases/impressions as proxy when clicks=0
+      hook:a.imp_h>0?a.hook_n/a.imp_h:0,
+      cvr:a.lp_views>0?a.p/a.lp_views*100:0,
+      aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,
+      atc:a.atc,days:d,ads:Object.keys(a.ads).length,
+      spendPct:a.spend/campTotal*100};
   });
+}
+
+// Get top spending ad for an adSet
+function getTopAd(adSet){
+  var byAd={};
+  filteredData.filter(function(r){return r.adSet===adSet;}).forEach(function(r){byAd[r.ad]=(byAd[r.ad]||0)+r.spend;});
+  var top=null,topSpend=0;
+  Object.keys(byAd).forEach(function(ad){if(byAd[ad]>topSpend){topSpend=byAd[ad];top=ad;}});
+  return top;
 }
 
 function sortTable(key){
@@ -728,11 +851,28 @@ function renderTable(){
   adSets.sort(function(a,b){var av=a[sortKey]||0,bv=b[sortKey]||0;if(typeof av==='string')return av.localeCompare(bv)*sortDir;return(av-bv)*sortDir;});
   var maxSpend=Math.max.apply(null,adSets.map(function(a){return a.spend;}).concat([1]));
   var tbody=document.getElementById('adSetBody');tbody.innerHTML='';
+
   adSets.forEach(function(a){
+    var cd=customData[a.adSet]||{};
+    var topAd=getTopAd(a.adSet);
+    var videoUrl=cd.videos&&topAd&&cd.videos[topAd]?cd.videos[topAd]:(cd.video_url||'');
     var barW=(a.spend/maxSpend*100).toFixed(1);
+
     var tr=document.createElement('tr');tr.className='adset-row';
+
+    // Video cell
+    var videoCell='<td class="video-cell" onclick="event.stopPropagation();">';
+    if(videoUrl){
+      videoCell+='<div class="play-btn" onclick="openVideoPlayer(\''+esc(videoUrl)+'\',\''+esc(a.adSet)+'\')" title="Play video"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>';
+    }
+    if(isAdmin){
+      videoCell+='<span class="add-video-btn" onclick="openVideoEdit(\''+esc(a.adSet)+'\',\''+esc(topAd||'')+'\',\''+esc(videoUrl)+'\')">'+(videoUrl?'✎':'+ Video')+'</span>';
+    }
+    videoCell+='</td>';
+
     tr.innerHTML=
-      '<td style="white-space:normal;word-break:break-word;max-width:220px;line-height:1.4;font-weight:500;">'+a.adSet+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      '<td style="white-space:normal;word-break:break-word;max-width:200px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      +videoCell
       +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:90px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td style="font-family:var(--mono);color:var(--warn);font-weight:600;">'+(a.roas>0?a.roas.toFixed(2)+'x':'-')+'</td>'
@@ -745,16 +885,129 @@ function renderTable(){
       +'<td style="font-family:var(--mono);color:var(--green);">'+(a.cvr>0?a.cvr.toFixed(2)+'%':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--warn);">'+(a.aov>0?'$'+a.aov.toFixed(0):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--muted2);">'+(a.atc>0?Math.round(a.atc):'-')+'</td>'
-      +'<td style="font-family:var(--mono);color:var(--muted2);">'+a.days+'</td>';
+      +'<td style="font-family:var(--mono);color:var(--muted2);">'+a.days+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="max-width:200px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>';
+
     tr.onclick=function(){openDrawer(a.adSet);};
     tbody.appendChild(tr);
   });
   s('tableCount',adSets.length+' ad sets');
 }
 
+// ── EDITABLE FIELDS ──
+function editableDiv(adSet, field, val, placeholder){
+  var hasVal=val&&val.trim();
+  return '<div class="editable-val'+(hasVal?'':' empty')+'" data-adset="'+esc(adSet)+'" data-field="'+field+'"'
+    +(isAdmin?' contenteditable="true"':' contenteditable="false"')
+    +' data-placeholder="'+placeholder+'"'
+    +' onblur="saveEditableField(this)"'
+    +' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();this.blur();}">'
+    +(hasVal?esc(val):'<span style=\'color:var(--muted);font-style:italic;font-size:11px;\'>'+placeholder+'</span>')
+    +'</div>';
+}
+
+async function saveEditableField(el){
+  if(!isAdmin) return;
+  var adSet=el.getAttribute('data-adset');
+  var field=el.getAttribute('data-field');
+  var val=el.innerText.trim();
+  // Update local cache
+  if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',videos:{}};
+  customData[adSet][field]=val;
+  // Update DOM appearance
+  if(val){el.classList.remove('empty');}
+  else{el.classList.add('empty');el.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:11px;">'+el.getAttribute('data-placeholder')+'</span>';}
+  // Save to Supabase
+  try{
+    var fields={};
+    if(field==='angle') fields.angle=val;
+    if(field==='awareness') fields.awareness_level=val;
+    if(field==='learning') fields.learning=val;
+    await upsertCustom(adSet, null, fields);
+    showToast('Saved','success');
+  }catch(e){showToast('Save failed','error');}
+}
+
+// ── VIDEO ──
+function openVideoPlayer(url, adSet){
+  var vid=document.getElementById('videoPlayer');
+  var frame=document.getElementById('videoFrame');
+  var saveBtn=document.getElementById('videoSaveBtn');
+  var urlInput=document.getElementById('videoUrlInput');
+  var editLabel=document.getElementById('videoEditLabel');
+  document.getElementById('videoModalTitle').textContent=adSet;
+  vid.style.display='none';frame.style.display='none';saveBtn.style.display='none';urlInput.style.display='none';editLabel.style.display='none';
+  // Convert Dropbox share URL to direct link
+  var directUrl=toDirectDropboxUrl(url);
+  vid.src=directUrl;
+  vid.style.display='block';
+  openModal('videoModal');
+}
+
+function openVideoEdit(adSet, adName, currentUrl){
+  var vid=document.getElementById('videoPlayer');
+  var frame=document.getElementById('videoFrame');
+  var saveBtn=document.getElementById('videoSaveBtn');
+  var urlInput=document.getElementById('videoUrlInput');
+  var editLabel=document.getElementById('videoEditLabel');
+  document.getElementById('videoModalTitle').textContent='Set video for '+adSet;
+  vid.style.display='none';frame.style.display='none';
+  editLabel.style.display='block';
+  editLabel.textContent='Paste a Dropbox share link for the top-spending ad in this ad set:';
+  urlInput.style.display='block';
+  urlInput.value=currentUrl||'';
+  saveBtn.style.display='block';
+  videoTarget={adSet:adSet, ad:adName};
+  openModal('videoModal');
+}
+
+function openVideoEditForAd(adSet, adName, currentUrl){
+  var vid=document.getElementById('videoPlayer');
+  var frame=document.getElementById('videoFrame');
+  var saveBtn=document.getElementById('videoSaveBtn');
+  var urlInput=document.getElementById('videoUrlInput');
+  var editLabel=document.getElementById('videoEditLabel');
+  document.getElementById('videoModalTitle').textContent='Set video for '+adName;
+  vid.style.display='none';frame.style.display='none';
+  editLabel.style.display='block';
+  editLabel.textContent='Paste a Dropbox share link for this ad:';
+  urlInput.style.display='block';
+  urlInput.value=currentUrl||'';
+  saveBtn.style.display='block';
+  videoTarget={adSet:adSet, ad:adName};
+  openModal('videoModal');
+}
+
+async function saveVideoUrl(){
+  var url=document.getElementById('videoUrlInput').value.trim();
+  var adSet=videoTarget.adSet, adName=videoTarget.ad;
+  if(!adSet) return;
+  if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',videos:{}};
+  if(adName){
+    customData[adSet].videos[adName]=url;
+  } else {
+    customData[adSet].video_url=url;
+  }
+  try{
+    await upsertCustom(adSet, adName||null, {video_url:url});
+    closeModal('videoModal');
+    renderTable();
+    if(drawerAdSet===adSet) renderDrawer();
+    showToast('Video link saved','success');
+  }catch(e){showToast('Save failed: '+e.message,'error');}
+}
+
+function toDirectDropboxUrl(url){
+  if(!url) return url;
+  // Convert dl=0 to dl=1 for direct download / video streaming
+  return url.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('?dl=0','?dl=1').replace('?dl=0','').replace(/&dl=0/,'');
+}
+
 // ── DRAWER ──
 function openDrawer(adSet){
-  drawerAdSet=adSet;drawerCamp=activeCamp;drawerTab='variations';
+  drawerAdSet=adSet;drawerTab='variations';
   document.getElementById('dtabVariations').classList.add('active');
   document.getElementById('dtabDaily').classList.remove('active');
   s('drawerName',adSet);s('drawerCamp',activeCamp);
@@ -776,14 +1029,44 @@ function renderDrawer(){
     +'<div class="dkpi"><div class="dkpi-label">CPA</div><div class="dkpi-val" style="color:var(--red);">'+(oCpa>0?'$'+oCpa.toFixed(2):'-')+'</div></div>'
     +'<div class="dkpi"><div class="dkpi-label">Purch. Value</div><div class="dkpi-val" style="color:var(--accent2);">'+(tCV>0?'$'+Math.round(tCV).toLocaleString():'-')+'</div></div>'
     +'<div class="dkpi"><div class="dkpi-label">Purchases</div><div class="dkpi-val">'+Math.round(tP)+'</div></div>';
-  if(drawerTab==='variations')renderVariations(rows,tSpend);
+
+  // Custom fields panel
+  var cd=customData[drawerAdSet]||{};
+  var readOnly=!isAdmin;
+  var customHtml=
+    '<div class="custom-field"><div class="custom-field-label">Angle</div>'
+    +'<input class="custom-field-input" id="dcAngle" value="'+esc(cd.angle||'')+'" placeholder="e.g. Problem-aware, Benefit-led…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
+    +'<div class="custom-field"><div class="custom-field-label">Awareness Level</div>'
+    +'<input class="custom-field-input" id="dcAwareness" value="'+esc(cd.awareness||'')+'" placeholder="e.g. Cold, Warm, Hot…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
+    +'<div class="custom-field" style="flex:2;min-width:300px;"><div class="custom-field-label">Learning</div>'
+    +'<textarea class="custom-field-input" id="dcLearning" rows="2" placeholder="What did we learn from testing this ad set?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.learning||'')+'</textarea></div>';
+  if(isAdmin) customHtml+='<button class="save-custom-btn" onclick="saveDrawerCustom(true)">Save</button>';
+  document.getElementById('drawerCustom').innerHTML=customHtml;
+
+  if(drawerTab==='variations') renderVariations(rows,tSpend);
   else renderDailyPct(rows);
+}
+
+async function saveDrawerCustom(explicit){
+  if(!isAdmin) return;
+  var angle=document.getElementById('dcAngle')?document.getElementById('dcAngle').value.trim():'';
+  var awareness=document.getElementById('dcAwareness')?document.getElementById('dcAwareness').value.trim():'';
+  var learning=document.getElementById('dcLearning')?document.getElementById('dcLearning').value.trim():'';
+  if(!customData[drawerAdSet]) customData[drawerAdSet]={angle:'',awareness:'',learning:'',videos:{}};
+  customData[drawerAdSet].angle=angle;
+  customData[drawerAdSet].awareness=awareness;
+  customData[drawerAdSet].learning=learning;
+  try{
+    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning});
+    if(explicit) showToast('Saved','success');
+    renderTable();
+  }catch(e){showToast('Save failed','error');}
 }
 
 function renderVariations(rows,totalSpend){
   var byAd={};
   rows.forEach(function(r){
-    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,clicks:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,days:{}};
+    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,days:{}};
     byAd[r.ad].spend+=r.spend;byAd[r.ad].p+=r.purchases;byAd[r.ad].cv+=r.conv_val;byAd[r.ad].reach+=r.reach;byAd[r.ad].imp+=r.impressions;byAd[r.ad].atc+=r.atc;byAd[r.ad].lp_views+=r.lp_views;
     if(r.freq>0){byAd[r.ad].freq_n+=r.freq*r.impressions;byAd[r.ad].freq_d+=r.impressions;}
     if(r.hook_rate>0){byAd[r.ad].hook_n+=r.hook_rate*r.impressions;byAd[r.ad].imp_h+=r.impressions;}
@@ -792,36 +1075,47 @@ function renderVariations(rows,totalSpend){
   });
   var ads=Object.keys(byAd).map(function(k){
     var a=byAd[k];
-    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.clicks/a.imp*100:0,atc:a.atc,cvr:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0};
+    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
   }).sort(function(a,b){return b.spend-a.spend;});
 
   var ranked=ads.slice().sort(function(a,b){return b.roas-a.roas;});
   var rankMap={};ranked.forEach(function(a,i){rankMap[a.ad]=i+1;});
+  var cd=customData[drawerAdSet]||{};
 
-  function ml(label, tip){ return '<span class="ad-metric-label">'+label+'<i class="tip" data-tip="'+tip+'">?</i></span>'; }
+  function ml(label,tip){return '<span class="ad-metric-label">'+label+'<i class="tip" data-tip="'+tip+'">?</i></span>';}
+
   var html='<div class="ad-cards">';
   ads.forEach(function(a){
     var rank=rankMap[a.ad];
     var rankClass=rank===1?'rank-1':rank===2?'rank-2':'rank-3';
     var rankLabel=rank===1?'#1 ROAS':rank===2?'#2 ROAS':'#'+rank;
-    var acv=a.p>0?a.cv/a.p:0;
-    html+='<div class="ad-card">'
-      +'<div><span class="ad-rank '+rankClass+'">'+rankLabel+'</span></div>'
-      +'<div class="ad-card-name">'+a.ad+'</div>'
-      +'<div class="ad-metric">'+ml('Spend','Total ad spend for this creative.')+'<span class="ad-metric-val" style="color:var(--accent);">$'+f2(a.spend)+'</span></div>'
-      +'<div class="ad-metric">'+ml('Spend %','This ad&#39;s share of total ad set spend.')+'<span class="ad-metric-val" style="color:var(--muted2);">'+a.spendPct.toFixed(1)+'%</span></div>'
-      +'<div class="ad-metric">'+ml('ROAS','Return on Ad Spend. Purchase value ÷ spend.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.roas>0?a.roas.toFixed(2)+'x':'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('CPA','Cost Per Acquisition. Spend ÷ purchases.')+'<span class="ad-metric-val" style="color:var(--red);">'+(a.cpa>0?'$'+a.cpa.toFixed(2):'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('Purchases','Number of purchase conversions.')+'<span class="ad-metric-val">'+Math.round(a.p)+'</span></div>'
-      +'<div class="ad-metric">'+ml('Purch. Value','Total purchase conversion value (revenue).')+'<span class="ad-metric-val" style="color:var(--accent2);">'+(a.cv>0?'$'+Math.round(a.cv).toLocaleString():'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('ACV','Average Cart Value. Purchase value ÷ purchases. Revenue per order.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(acv>0?'$'+acv.toFixed(2):'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('CVR','Conversion Rate. Purchases ÷ landing page views × 100.')+'<span class="ad-metric-val" style="color:var(--green);">'+(a.cvr>0?a.cvr.toFixed(2)+'%':'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('Hook Rate','% of viewers who watched 3+ seconds. Measures how well the opening grabs attention.')+'<span class="ad-metric-val" style="color:var(--accent2);">'+(a.hook>0?(a.hook*100).toFixed(1)+'%':'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('AOV','Average Order Value from Meta&#39;s reported average purchase conversion value.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.aov>0?'$'+a.aov.toFixed(0):'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('Freq','Average times each person saw this ad.')+'<span class="ad-metric-val" style="color:var(--pink);">'+(a.freq>0?a.freq.toFixed(2):'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('CTR','Click-Through Rate. Clicks ÷ impressions × 100.')+'<span class="ad-metric-val">'+(a.ctr>0?a.ctr.toFixed(2)+'%':'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('ATC','Adds to Cart — times people added a product to cart.')+'<span class="ad-metric-val">'+(a.atc>0?Math.round(a.atc):'-')+'</span></div>'
-      +'<div class="ad-metric">'+ml('Days active','Number of days this ad had spend in the selected period.')+'<span class="ad-metric-val" style="color:var(--muted2);">'+a.days+'</span></div>'
+    var videoUrl=cd.videos&&cd.videos[a.ad]?cd.videos[a.ad]:'';
+    var directUrl=toDirectDropboxUrl(videoUrl);
+
+    html+='<div class="ad-card">';
+    // Video section
+    if(videoUrl){
+      html+='<div class="ad-video-wrap"><video src="'+esc(directUrl)+'" controls style="width:100%;max-height:160px;display:block;"></video></div>';
+    }
+    if(isAdmin){
+      html+='<div class="ad-video-placeholder" onclick="openVideoEditForAd(\''+esc(drawerAdSet)+'\',\''+esc(a.ad)+'\',\''+esc(videoUrl)+'\')"><span>'+(videoUrl?'✎ Change video':'+ Add video')+'</span></div>';
+    }
+    html+='<div><span class="ad-rank '+rankClass+'">'+rankLabel+'</span></div>'
+      +'<div class="ad-card-name">'+esc(a.ad)+'</div>'
+      +'<div class="ad-metric">'+ml('Spend','Total spend for this creative.')+'<span class="ad-metric-val" style="color:var(--accent);">$'+f2(a.spend)+'</span></div>'
+      +'<div class="ad-metric">'+ml('Spend %','Share of ad set spend.')+'<span class="ad-metric-val" style="color:var(--muted2);">'+a.spendPct.toFixed(1)+'%</span></div>'
+      +'<div class="ad-metric">'+ml('ROAS','Purchase value ÷ spend.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.roas>0?a.roas.toFixed(2)+'x':'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('CPA','Spend ÷ purchases.')+'<span class="ad-metric-val" style="color:var(--red);">'+(a.cpa>0?'$'+a.cpa.toFixed(2):'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('Purchases','Purchase conversions.')+'<span class="ad-metric-val">'+Math.round(a.p)+'</span></div>'
+      +'<div class="ad-metric">'+ml('Purch. Value','Total revenue attributed.')+'<span class="ad-metric-val" style="color:var(--accent2);">'+(a.cv>0?'$'+Math.round(a.cv).toLocaleString():'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('ACV','Average Cart Value. Revenue ÷ purchases.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.acv>0?'$'+a.acv.toFixed(2):'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('CVR','Purchases ÷ landing page views × 100.')+'<span class="ad-metric-val" style="color:var(--green);">'+(a.cvr>0?a.cvr.toFixed(2)+'%':'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('Hook Rate','% who watched 3+ seconds.')+'<span class="ad-metric-val" style="color:var(--accent2);">'+(a.hook>0?(a.hook*100).toFixed(1)+'%':'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('AOV','Avg purchase value from Meta.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.aov>0?'$'+a.aov.toFixed(0):'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('Freq','Avg times each person saw this ad.')+'<span class="ad-metric-val" style="color:var(--pink);">'+(a.freq>0?a.freq.toFixed(2):'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('CTR','Clicks ÷ impressions × 100.')+'<span class="ad-metric-val">'+(a.ctr>0?a.ctr.toFixed(2)+'%':'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('ATC','Adds to cart.')+'<span class="ad-metric-val">'+(a.atc>0?Math.round(a.atc):'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('Days active','Days with spend in selected period.')+'<span class="ad-metric-val" style="color:var(--muted2);">'+a.days+'</span></div>'
       +'</div>';
   });
   html+='</div>';
@@ -833,31 +1127,55 @@ function renderDailyPct(rows){
   var campDaySpend={};filteredData.forEach(function(r){campDaySpend[r.day]=(campDaySpend[r.day]||0)+r.spend;});
   var asDaySpend={},asDayP={};
   rows.forEach(function(r){asDaySpend[r.day]=(asDaySpend[r.day]||0)+r.spend;asDayP[r.day]=(asDayP[r.day]||0)+r.purchases;});
-  var maxPct=0;
-  allDays.forEach(function(d){var cs=campDaySpend[d]||0,as=asDaySpend[d]||0;var p=cs>0?as/cs*100:0;if(p>maxPct)maxPct=p;});
-
+  var maxPct=0;allDays.forEach(function(d){var cs=campDaySpend[d]||0,as=asDaySpend[d]||0;var p=cs>0?as/cs*100:0;if(p>maxPct)maxPct=p;});
   var html='<table style="width:100%;border-collapse:collapse;"><thead><tr>'
-    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap;">DAY</th>'
-    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap;">SPEND</th>'
-    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap;min-width:180px;">% OF CAMPAIGN</th>'
-    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap;">CAMP. TOTAL</th>'
-    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap;">PURCHASES</th>'
-    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap;">CPA</th>'
+    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;">DAY</th>'
+    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;">SPEND</th>'
+    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;min-width:160px;">% OF CAMPAIGN</th>'
+    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;">CAMP. TOTAL</th>'
+    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;">PURCHASES</th>'
+    +'<th style="font-family:var(--mono);font-size:10px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);text-align:left;">CPA</th>'
     +'</tr></thead><tbody>';
   allDays.forEach(function(d){
     var as2=asDaySpend[d]||0,cs=campDaySpend[d]||0,ap=asDayP[d]||0;
     var pct=cs>0?as2/cs*100:0,barW=maxPct>0?pct/maxPct*100:0,cpa=ap>0?as2/ap:0;
     html+='<tr style="'+(as2===0?'opacity:0.3;':'')+'">'
-      +'<td style="font-family:var(--mono);font-size:11px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;">'+d+'</td>'
-      +'<td style="font-family:var(--mono);color:var(--accent);padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;">'+(as2>0?'$'+f2(as2):'-')+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);">'+d+'</td>'
+      +'<td style="font-family:var(--mono);color:var(--accent);padding:9px 14px;border-bottom:1px solid var(--border);">'+(as2>0?'$'+f2(as2):'-')+'</td>'
       +'<td style="padding:9px 14px;border-bottom:1px solid var(--border);">'+(pct>0?'<div style="display:flex;align-items:center;gap:8px;"><div style="width:100px;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+barW.toFixed(1)+'%;background:var(--accent);border-radius:3px;"></div></div><span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);">'+pct.toFixed(1)+'%</span></div>':'-')+'</td>'
-      +'<td style="font-family:var(--mono);color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);white-space:nowrap;">'+(cs>0?'$'+f2(cs):'-')+'</td>'
+      +'<td style="font-family:var(--mono);color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);">'+(cs>0?'$'+f2(cs):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);">'+(ap>0?Math.round(ap):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--red);padding:9px 14px;border-bottom:1px solid var(--border);">'+(cpa>0?'$'+cpa.toFixed(2):'-')+'</td>'
       +'</tr>';
   });
   html+='</tbody></table>';
   document.getElementById('drawerBody').innerHTML=html;
+}
+
+// ── MODAL HELPERS ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='videoModal'){var v=document.getElementById('videoPlayer');v.pause();v.src='';}
+}
+document.querySelectorAll('.modal-overlay').forEach(function(el){
+  el.addEventListener('click',function(e){if(e.target===el)closeModal(el.id);});
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.open').forEach(function(el){closeModal(el.id);});}});
+
+// ── TOAST ──
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+(type||'');
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+// ── UTILS ──
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 window.addEventListener('resize',function(){drawLineChart();});
