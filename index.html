@@ -482,9 +482,9 @@ async function loadCustomData(){
     if(r.angle) map[key].angle = r.angle;
     if(r.awareness_level) map[key].awareness = r.awareness_level;
     if(r.learning) map[key].learning = r.learning;
-    if(r.ad_name && r.ad_name !== '' && r.video_url) map[key].videos[r.ad_name] = r.video_url;
+    if(r.ad && r.ad !== '' && r.video_url) map[key].videos[r.ad] = r.video_url;
     // top-level video (adSet video = top spender) — ad_name is empty string
-    if((!r.ad_name || r.ad_name === '') && r.video_url) map[key].video_url = r.video_url;
+    if((!r.ad || r.ad === '') && r.video_url) map[key].video_url = r.video_url;
   });
   return map;
 }
@@ -492,8 +492,9 @@ async function loadCustomData(){
 async function upsertCustom(adSet, adName, fields){
   var adNameKey = adName || '';
   // Check for existing row — handle both null and empty string ad_name
-  var filterNull = 'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=is.null';
-  var filterEmpty = 'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad_name=eq.'+encodeURIComponent(adNameKey);
+  // For ad-set level records (no specific ad), try both null and empty string
+  var filterNull = 'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad=is.null';
+  var filterEmpty = 'custom_data?ad_set=eq.'+encodeURIComponent(adSet)+'&ad=eq.'+encodeURIComponent(adNameKey);
   var query = adNameKey === '' ? filterNull : filterEmpty;
 
   var existing = await sbFetch(query, {method:'GET', prefer:'return=representation'});
@@ -504,7 +505,7 @@ async function upsertCustom(adSet, adName, fields){
     await sbFetch(query, {method:'PATCH', prefer:'return=minimal', body: JSON.stringify(payload)});
   } else {
     // No row yet — INSERT, using null for ad_name when empty
-    var payload = Object.assign({ad_set: adSet, ad_name: adNameKey||null}, fields);
+    var payload = Object.assign({ad_set: adSet, ad: adNameKey||null}, fields);
     await sbFetch('custom_data', {method:'POST', prefer:'return=minimal', body: JSON.stringify(payload)});
   }
 }
