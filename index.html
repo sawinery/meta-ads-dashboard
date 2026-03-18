@@ -1008,7 +1008,7 @@ function resultBadge(val){
 function resultDropdownCell(adSet, val){
   var cell='<td onclick="event.stopPropagation();" style="min-width:130px;">';
   if(isAdmin){
-    cell+='<select class="type-select" onchange="saveResultField(this,''+esc(adSet)+'')">'
+    cell+='<select class="type-select" onchange="saveResultField(this,\''+esc(adSet)+'\')">'
       +'<option value="">—</option>'
       +'<option value="Winner"'+(val==='Winner'?' selected':'')+'>🏆 Winner</option>'
       +'<option value="Loser"'+(val==='Loser'?' selected':'')+'>✕ Loser</option>'
@@ -1033,7 +1033,7 @@ function briefCell(adSet, url){
   if(isAdmin){
     var k='burl_'+Math.random().toString(36).slice(2);
     window[k]=adSet;
-    cell+='<input class="brief-input" value="'+esc(url||'')+'" placeholder="https://…" onblur="saveBriefUrl(this,''+esc(adSet)+'')" onclick="event.stopPropagation();">';
+    cell+='<input class="brief-input" value="'+esc(url||'')+'" placeholder="https://…" onblur="saveBriefUrl(this,\''+esc(adSet)+'\')" onclick="event.stopPropagation();">';
   } else if(url){
     cell+='<a class="brief-link" href="'+esc(url)+'" target="_blank" onclick="event.stopPropagation();">📋 Brief</a>';
   } else {
