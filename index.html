@@ -1091,19 +1091,38 @@ function getCampPerfDuring7Days(adSet){
 }
 
 function campPerf7Html(adSet){
-  var perf=getCampPerfDuring7Days(adSet);
-  if(!perf) return '<span style="color:var(--muted);font-size:11px;">-</span>';
-  var roasColor=perf.roas>=3?'var(--accent)':perf.roas>=2?'var(--warn)':'var(--red)';
-  return '<div style="display:flex;flex-direction:column;gap:4px;min-width:90px;">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
-    +'<span style="font-family:var(--mono);font-size:10px;color:var(--muted2);">ROAS</span>'
-    +'<span style="font-family:var(--mono);font-size:12px;font-weight:600;color:'+roasColor+';">'+(perf.roas>0?perf.roas.toFixed(2)+'x':'-')+'</span>'
-    +'</div>'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
-    +'<span style="font-family:var(--mono);font-size:10px;color:var(--muted2);">CPA</span>'
-    +'<span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--red);">'+(perf.cpa>0?'$'+perf.cpa.toFixed(0):'-')+'</span>'
-    +'</div>'
-    +'<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:1px;">'+perf.days+'d window</div>'
+  // Get the first 7 days this adSet had spend
+  var adRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
+  if(!adRows.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var daySpend={};
+  adRows.forEach(function(r){var d=String(r.day).slice(0,10);daySpend[d]=(daySpend[d]||0)+r.spend;});
+  var first7=Object.keys(daySpend).sort().slice(0,7);
+  if(!first7.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+
+  // Get per-day campaign ROAS
+  var dayRoas=first7.map(function(d){
+    var campRows=allData.filter(function(r){return r.campaign===activeCamp&&String(r.day).slice(0,10)===d;});
+    var spend=0,cv=0;
+    campRows.forEach(function(r){spend+=r.spend;cv+=r.conv_val;});
+    return spend>0?cv/spend:0;
+  });
+
+  var maxRoas=Math.max.apply(null,dayRoas.concat([0.01]));
+  var avgRoas=(dayRoas.reduce(function(a,b){return a+b;},0)/dayRoas.length);
+
+  var bars=dayRoas.map(function(v,i){
+    var h=Math.max(3,Math.round(v/maxRoas*26));
+    var color=v>=3?'var(--accent)':v>=2?'var(--warn)':'var(--red)';
+    return '<div class="ramp-bar-wrap" style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">'
+      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;">D'+(i+1)+': '+(v>0?v.toFixed(2)+'x':'-')+'</div>'
+      +'<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" onmouseenter="this.previousSibling.style.opacity=1" onmouseleave="this.previousSibling.style.opacity=0"></div>'
+      +'</div>';
+  }).join('');
+
+  var avgColor=avgRoas>=3?'var(--accent)':avgRoas>=2?'var(--warn)':'var(--red)';
+  return '<div class="ramp-cell">'
+    +'<div class="ramp-bars" style="align-items:flex-end;">'+bars+'</div>'
+    +'<span class="ramp-pct" style="color:'+avgColor+';">avg '+avgRoas.toFixed(2)+'x</span>'
     +'</div>';
 }
 
