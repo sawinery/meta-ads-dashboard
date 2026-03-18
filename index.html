@@ -469,7 +469,20 @@ async function sbFetch(path, opts){
 }
 
 async function loadAdData(){
-  return await sbFetch('ad_data?select=*&order=day.asc&limit=100000', {method:'GET', prefer:'return=representation'});
+  var allRows = [];
+  var pageSize = 1000;
+  var offset = 0;
+  while(true){
+    var batch = await sbFetch(
+      'ad_data?select=*&order=day.asc&limit='+pageSize+'&offset='+offset,
+      {method:'GET', prefer:'return=representation'}
+    );
+    if(!batch || batch.length === 0) break;
+    allRows = allRows.concat(batch);
+    if(batch.length < pageSize) break; // last page
+    offset += pageSize;
+  }
+  return allRows;
 }
 
 async function loadCustomData(){
