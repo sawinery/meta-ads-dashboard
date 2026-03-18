@@ -244,6 +244,14 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 .type-new{background:rgba(139,92,246,0.15);color:var(--purple);}
 .type-iter{background:rgba(14,165,233,0.12);color:var(--accent2);}
 .type-none{background:var(--surface2);color:var(--muted2);}
+.result-winner{background:rgba(0,212,170,0.15);color:var(--accent);}
+.result-loser{background:rgba(239,68,68,0.15);color:var(--red);}
+.result-breakthrough{background:rgba(245,158,11,0.15);color:var(--warn);}
+.brief-link{font-family:var(--mono);font-size:11px;color:var(--accent2);text-decoration:none;border-bottom:1px dashed var(--accent2);white-space:nowrap;}
+.brief-link:hover{color:var(--accent);}
+.brief-input{width:100%;padding:4px 7px;background:var(--surface2);border:1px solid var(--border2);color:var(--accent2);border-radius:4px;font-family:var(--mono);font-size:11px;outline:none;}
+.brief-input:focus{border-color:var(--accent);}
+.first-day-badge{font-family:var(--mono);font-size:10px;color:var(--muted2);background:var(--surface2);padding:2px 6px;border-radius:3px;white-space:nowrap;}
 
 /* ── MEDIA THUMB ── */
 .media-thumb{width:52px;height:40px;border-radius:4px;overflow:hidden;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative;}
@@ -377,6 +385,13 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
           <th>TOP VAR. PREVIEW</th>
+          <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
+          <th>AVATAR<i class="tip" data-tip="Core avatar / target customer this ad set speaks to.">?</i></th>
+          <th>SUB-AVATAR<i class="tip" data-tip="More specific sub-avatar or segment.">?</i></th>
+          <th>WHAT WE TEST<i class="tip" data-tip="What are we testing with this ad set?">?</i></th>
+          <th>WHY WE TEST<i class="tip" data-tip="Why are we testing this?">?</i></th>
+          <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
+          <th>1ST SPEND DAY<i class="tip" data-tip="First day this ad set recorded spend.">?</i></th>
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
@@ -551,6 +566,12 @@ async function loadCustomData(){
     if(r.angle) map[key].angle = r.angle;
     if(r.awareness_level) map[key].awareness = r.awareness_level;
     if(r.learning) map[key].learning = r.learning;
+    if(r.core_avatar) map[key].coreAvatar = r.core_avatar;
+    if(r.sub_avatar) map[key].subAvatar = r.sub_avatar;
+    if(r.result) map[key].result = r.result;
+    if(r.brief_url) map[key].briefUrl = r.brief_url;
+    if(r.what_testing) map[key].whatTesting = r.what_testing;
+    if(r.why_testing) map[key].whyTesting = r.why_testing;
     if(r.ad && r.ad !== '' && r.video_url) map[key].videos[r.ad] = r.video_url;
     // top-level record (ad is null or empty) — angle/awareness/learning/ad_type/video_url
     if((!r.ad || r.ad === '')){
@@ -970,6 +991,65 @@ function sortTable(key){
   renderTable();
 }
 
+function getFirstSpendDay(adSet){
+  var rows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
+  if(!rows.length) return '-';
+  var days=rows.map(function(r){return String(r.day).slice(0,10);}).sort();
+  return days[0];
+}
+
+function resultBadge(val){
+  if(!val) return '<span style="color:var(--muted);font-size:11px;">—</span>';
+  var cls=val==='Winner'?'result-winner':val==='Loser'?'result-loser':'result-breakthrough';
+  var icon=val==='Winner'?'🏆':val==='Loser'?'✕':'⚡';
+  return '<span class="type-badge '+cls+'">'+icon+' '+val+'</span>';
+}
+
+function resultDropdownCell(adSet, val){
+  var cell='<td onclick="event.stopPropagation();" style="min-width:130px;">';
+  if(isAdmin){
+    cell+='<select class="type-select" onchange="saveResultField(this,''+esc(adSet)+'')">'
+      +'<option value="">—</option>'
+      +'<option value="Winner"'+(val==='Winner'?' selected':'')+'>🏆 Winner</option>'
+      +'<option value="Loser"'+(val==='Loser'?' selected':'')+'>✕ Loser</option>'
+      +'<option value="Breakthrough"'+(val==='Breakthrough'?' selected':'')+'>⚡ Breakthrough</option>'
+      +'</select>';
+  } else {
+    cell+=resultBadge(val);
+  }
+  return cell+'</td>';
+}
+
+async function saveResultField(el, adSet){
+  var val=el.value;
+  if(!customData[adSet]) customData[adSet]={};
+  customData[adSet].result=val;
+  try{ await upsertCustom(adSet,null,{result:val}); showToast('Saved','success'); }
+  catch(e){ showToast('Save failed','error'); }
+}
+
+function briefCell(adSet, url){
+  var cell='<td onclick="event.stopPropagation();" style="min-width:120px;">';
+  if(isAdmin){
+    var k='burl_'+Math.random().toString(36).slice(2);
+    window[k]=adSet;
+    cell+='<input class="brief-input" value="'+esc(url||'')+'" placeholder="https://…" onblur="saveBriefUrl(this,''+esc(adSet)+'')" onclick="event.stopPropagation();">';
+  } else if(url){
+    cell+='<a class="brief-link" href="'+esc(url)+'" target="_blank" onclick="event.stopPropagation();">📋 Brief</a>';
+  } else {
+    cell+='<span style="color:var(--muted);font-size:11px;">—</span>';
+  }
+  return cell+'</td>';
+}
+
+async function saveBriefUrl(el, adSet){
+  var url=el.value.trim();
+  if(!customData[adSet]) customData[adSet]={};
+  customData[adSet].briefUrl=url;
+  try{ await upsertCustom(adSet,null,{brief_url:url}); showToast('Saved','success'); }
+  catch(e){ showToast('Save failed','error'); }
+}
+
 function getSpendRamp(adSet){
   var allRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp;});
   if(!allRows.length) return [];
@@ -1085,6 +1165,13 @@ function renderTable(){
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:110px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:220px;max-width:300px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
       +mediaThumbCell(a.adSet, topAd, mediaUrl)
+      +resultDropdownCell(a.adSet, cd.result||'')
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'coreAvatar',cd.coreAvatar||'','Core avatar…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:120px;">'+editableDiv(a.adSet,'subAvatar',cd.subAvatar||'','Sub-avatar…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;max-width:260px;">'+editableDiv(a.adSet,'whatTesting',cd.whatTesting||'','What are we testing?')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;max-width:260px;">'+editableDiv(a.adSet,'whyTesting',cd.whyTesting||'','Why are we testing?')+'</td>'
+      +briefCell(a.adSet, cd.briefUrl||'')
+      +'<td onclick="event.stopPropagation();"><span class="first-day-badge">'+getFirstSpendDay(a.adSet)+'</span></td>'
       +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:80px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
@@ -1138,6 +1225,10 @@ async function saveEditableField(el){
     if(field==='angle') fields.angle=val;
     if(field==='awareness') fields.awareness_level=val;
     if(field==='learning') fields.learning=val;
+    if(field==='coreAvatar') fields.core_avatar=val;
+    if(field==='subAvatar') fields.sub_avatar=val;
+    if(field==='whatTesting') fields.what_testing=val;
+    if(field==='whyTesting') fields.why_testing=val;
     await upsertCustom(adSet, null, fields);
     showToast('Saved','success');
   }catch(e){showToast('Save failed','error');}
@@ -1245,15 +1336,43 @@ function renderDrawer(){
       +'</select>'
     :'<input class="custom-field-input" id="dcType" value="'+esc(cd.adType||'')+'" readonly>';
 
-  var customHtml=
-    '<div class="custom-field" style="min-width:140px;"><div class="custom-field-label">Type</div>'+typeSelectHtml+'</div>'
+  var resultOpts=['','Winner','Loser','Breakthrough'];
+  var resultSelectHtml=isAdmin
+    ?'<select class="custom-field-input" id="dcResult" style="cursor:pointer;">'
+      +resultOpts.map(function(o){var icon=o==='Winner'?'🏆 ':o==='Loser'?'✕ ':o==='Breakthrough'?'⚡ ':'';return '<option value="'+o+'"'+(o===(cd.result||'')?'selected':'')+'>'+icon+o+'</option>';}).join('')
+      +'</select>'
+    :'<input class="custom-field-input" id="dcResult" value="'+esc(cd.result||'')+'" readonly>';
+
+  var customHtml='<div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;">'
+    +'<div class="custom-field" style="min-width:130px;"><div class="custom-field-label">Type</div>'+typeSelectHtml+'</div>'
+    +'<div class="custom-field" style="min-width:140px;"><div class="custom-field-label">Result</div>'+resultSelectHtml+'</div>'
+    +'<div class="custom-field" style="min-width:100px;"><div class="custom-field-label">1st Spend Day</div><div style="font-family:var(--mono);font-size:12px;color:var(--muted2);padding:6px 0;">'+getFirstSpendDay(drawerAdSet)+'</div></div>'
+    +'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-top:2px;">'
     +'<div class="custom-field"><div class="custom-field-label">Angle</div>'
     +'<input class="custom-field-input" id="dcAngle" value="'+esc(cd.angle||'')+'" placeholder="e.g. Problem-aware, Benefit-led…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
     +'<div class="custom-field"><div class="custom-field-label">Awareness Level</div>'
     +'<input class="custom-field-input" id="dcAwareness" value="'+esc(cd.awareness||'')+'" placeholder="e.g. Cold, Warm, Hot…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
+    +'<div class="custom-field"><div class="custom-field-label">Core Avatar</div>'
+    +'<input class="custom-field-input" id="dcCoreAvatar" value="'+esc(cd.coreAvatar||'')+'" placeholder="e.g. DIY homeowner…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
+    +'<div class="custom-field"><div class="custom-field-label">Sub-Avatar</div>'
+    +'<input class="custom-field-input" id="dcSubAvatar" value="'+esc(cd.subAvatar||'')+'" placeholder="e.g. First-time buyer…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
+    +'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-top:2px;">'
+    +'<div class="custom-field" style="flex:1;min-width:220px;"><div class="custom-field-label">What Are We Testing?</div>'
+    +'<textarea class="custom-field-input" id="dcWhatTesting" rows="2" placeholder="What hypothesis or creative element are we testing?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.whatTesting||'')+'</textarea></div>'
+    +'<div class="custom-field" style="flex:1;min-width:220px;"><div class="custom-field-label">Why Are We Testing?</div>'
+    +'<textarea class="custom-field-input" id="dcWhyTesting" rows="2" placeholder="What insight or reason is behind this test?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.whyTesting||'')+'</textarea></div>'
+    +'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-top:2px;">'
     +'<div class="custom-field" style="flex:2;min-width:260px;"><div class="custom-field-label">Learning</div>'
-    +'<textarea class="custom-field-input" id="dcLearning" rows="3" placeholder="What did we learn from testing this ad set?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.learning||'')+'</textarea></div>';
-  if(isAdmin) customHtml+='<button class="save-custom-btn" onclick="saveDrawerCustom(true)">Save</button>';
+    +'<textarea class="custom-field-input" id="dcLearning" rows="3" placeholder="What did we learn from testing this ad set?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.learning||'')+'</textarea></div>'
+    +'<div class="custom-field" style="min-width:200px;"><div class="custom-field-label">Brief Link</div>'
+    +(isAdmin?'<input class="custom-field-input brief-input" id="dcBriefUrl" value="'+esc(cd.briefUrl||'')+'" placeholder="https://…" onblur="saveDrawerCustom()">'
+             :(cd.briefUrl?'<a class="brief-link" href="'+esc(cd.briefUrl)+'" target="_blank">📋 Open Brief</a>':'<span style="color:var(--muted);font-size:11px;">—</span>'))
+    +'</div>'
+    +'</div>';
+  if(isAdmin) customHtml+='<button class="save-custom-btn" onclick="saveDrawerCustom(true)">Save All</button>';
   document.getElementById('drawerCustom').innerHTML=customHtml;
 
   if(drawerTab==='variations') renderVariations(rows,tSpend);
@@ -1267,12 +1386,26 @@ async function saveDrawerCustom(explicit){
   var learning=document.getElementById('dcLearning')?document.getElementById('dcLearning').value.trim():'';
   var adType=document.getElementById('dcType')?document.getElementById('dcType').value.trim():'';
   if(!customData[drawerAdSet]) customData[drawerAdSet]={angle:'',awareness:'',learning:'',adType:'',videos:{}};
+  var result=document.getElementById('dcResult')?document.getElementById('dcResult').value.trim():'';
+  var coreAvatar=document.getElementById('dcCoreAvatar')?document.getElementById('dcCoreAvatar').value.trim():'';
+  var subAvatar=document.getElementById('dcSubAvatar')?document.getElementById('dcSubAvatar').value.trim():'';
+  var whatTesting=document.getElementById('dcWhatTesting')?document.getElementById('dcWhatTesting').value.trim():'';
+  var whyTesting=document.getElementById('dcWhyTesting')?document.getElementById('dcWhyTesting').value.trim():'';
+  var briefUrl=document.getElementById('dcBriefUrl')?document.getElementById('dcBriefUrl').value.trim():'';
   customData[drawerAdSet].angle=angle;
   customData[drawerAdSet].awareness=awareness;
   customData[drawerAdSet].learning=learning;
   customData[drawerAdSet].adType=adType;
+  customData[drawerAdSet].result=result;
+  customData[drawerAdSet].coreAvatar=coreAvatar;
+  customData[drawerAdSet].subAvatar=subAvatar;
+  customData[drawerAdSet].whatTesting=whatTesting;
+  customData[drawerAdSet].whyTesting=whyTesting;
+  customData[drawerAdSet].briefUrl=briefUrl;
   try{
-    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning, ad_type:adType});
+    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning, ad_type:adType,
+      result:result, core_avatar:coreAvatar, sub_avatar:subAvatar,
+      what_testing:whatTesting, why_testing:whyTesting, brief_url:briefUrl});
     if(explicit) showToast('Saved','success');
     renderTable();
   }catch(e){showToast('Save failed','error');}
