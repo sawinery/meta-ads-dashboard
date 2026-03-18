@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c23;--border:#1e2530;--border2:#252d3a;--text:#e2e8f0;--muted:#4a5568;--muted2:#6b7280;--accent:#00d4aa;--accent2:#0ea5e9;--warn:#f59e0b;--purple:#8b5cf6;--red:#ef4444;--pink:#ec4899;--green:#10b981;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
+body.light{--bg:#f4f6f9;--surface:#ffffff;--surface2:#f0f2f5;--border:#dde1e9;--border2:#c8cdd8;--text:#1a1f2e;--muted:#9aa0b0;--muted2:#6b7280;--accent:#00a882;--accent2:#0284c7;--warn:#d97706;--purple:#7c3aed;--red:#dc2626;--pink:#db2777;--green:#059669;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;min-height:100vh;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
@@ -213,13 +214,25 @@ tr.adset-row:hover td{background:rgba(255,255,255,0.02);cursor:pointer;}
 
 /* Metric tooltips */
 .tip{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid var(--border2);color:var(--muted);font-size:9px;font-family:var(--sans);cursor:help;flex-shrink:0;position:relative;font-style:normal;line-height:1;}
-.tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:11px;line-height:1.5;padding:7px 10px;border-radius:5px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.6);pointer-events:none;width:200px;white-space:normal;text-transform:none;letter-spacing:0;font-weight:400;opacity:0;transition:opacity 0.15s;}
+.tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:11px;line-height:1.5;padding:7px 10px;border-radius:5px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.6);pointer-events:none;width:200px;white-space:normal;text-transform:none;letter-spacing:0;font-weight:400;opacity:0;transition:opacity 0.15s;}
 .tip::before{content:'';position:absolute;bottom:calc(100% + 1px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--border2);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.15s;}
 .tip:hover::after,.tip:hover::before{opacity:1;}
 .kpi .tip::after{bottom:auto;top:calc(100% + 6px);}
 .kpi .tip::before{bottom:auto;top:calc(100% + 1px);border-top-color:transparent;border-bottom-color:var(--border2);}
 th .tip::after{bottom:auto;top:calc(100% + 6px);left:0;transform:none;}
 th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border-top-color:transparent;border-bottom-color:var(--border2);}
+
+/* Theme toggle */
+.btn-theme{padding:4px 10px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1;}
+.btn-theme:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Fullscreen button */
+.btn-fullscreen{padding:4px 10px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1;}
+.btn-fullscreen:hover{border-color:var(--accent);color:var(--accent);}
+:fullscreen .topbar{position:fixed;top:0;left:0;right:0;z-index:200;}
+:fullscreen #dashboard{padding-top:57px;}
+:-webkit-full-screen .topbar{position:fixed;top:0;left:0;right:0;z-index:200;}
+:-webkit-full-screen #dashboard{padding-top:57px;}
 
 /* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--text);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);transform:translateY(16px);opacity:0;transition:all 0.25s;pointer-events:none;}
@@ -292,6 +305,8 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
   <div class="logo"><div class="logo-dot"></div>META ADS · DASHBOARD</div>
   <div class="topbar-right">
     <div class="data-status" id="dataStatus">Loading…</div>
+    <button class="btn-theme" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+    <button class="btn-fullscreen" id="fsBtn" onclick="toggleFullscreen()" title="Toggle fullscreen">⛶</button>
     <button class="btn-admin" id="adminBtn" onclick="openPasswordModal()">
       <span class="lock-icon">🔒</span><span id="adminBtnLabel">Admin</span>
     </button>
@@ -902,6 +917,7 @@ function drawLineChart(){
   var pad=chartPad,cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
   for(var gi=0;gi<=4;gi++){var gy=pad.t+cH*(1-gi/4);ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cW,gy);ctx.strokeStyle='#1e2530';ctx.lineWidth=1;ctx.stroke();var lbl=maxV*gi/4;var txt=chartMetric==='spend'||chartMetric==='cpa'?'$'+Math.round(lbl).toLocaleString():chartMetric==='roas'?lbl.toFixed(1)+'x':fk(lbl);ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='right';ctx.fillText(txt,pad.l-5,gy+3);}
   var step=Math.ceil(chartDays.length/7);ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted').trim()||'#4a5568';
   chartDays.forEach(function(d,i){if(i%step!==0&&i!==chartDays.length-1)return;ctx.fillText(d.slice(5),pad.l+(i/(chartDays.length-1))*cW,H-6);});
   topAS.forEach(function(as,ci){
     var pts=chartDays.map(function(d,i){return{x:pad.l+(i/(chartDays.length-1))*cW,y:pad.t+cH*(1-getChartVal(as+'||'+d)/maxV)};});
@@ -940,9 +956,13 @@ function drawDonut(){
   ctx.scale(dpr,dpr);ctx.clearRect(0,0,150,150);
   var cx=75,cy=75,r=62,ir=40,angle=-Math.PI/2;
   sorted.forEach(function(item,i){var sl=item[1]/total*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+sl);ctx.closePath();ctx.fillStyle=COLORS[i%COLORS.length];ctx.fill();angle+=sl;});
-  ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle='#111318';ctx.fill();
-  ctx.fillStyle='#e2e8f0';ctx.font='600 12px IBM Plex Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$'+Math.round(total/1000)+'K',cx,cy-5);
-  ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.fillText('TOTAL',cx,cy+9);
+  ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--surface').trim()||'#111318';
+  ctx.fill();
+  var textC=getComputedStyle(document.body).getPropertyValue('--text').trim()||'#e2e8f0';
+  var mutedC=getComputedStyle(document.body).getPropertyValue('--muted').trim()||'#4a5568';
+  ctx.fillStyle=textC;ctx.font='600 12px IBM Plex Mono';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$'+Math.round(total/1000)+'K',cx,cy-5);
+  ctx.fillStyle=mutedC;ctx.font='9px IBM Plex Mono';ctx.fillText('TOTAL',cx,cy+9);
   var legend=document.getElementById('donutLegend');legend.innerHTML='';
   sorted.forEach(function(item,i){var pct=(item[1]/total*100).toFixed(1);var div=document.createElement('div');div.className='legend-item';div.innerHTML='<div class="legend-dot" style="background:'+COLORS[i%COLORS.length]+'"></div><span class="legend-label" title="'+item[0]+'">'+item[0].slice(0,28)+'</span><span class="legend-val">$'+Math.round(item[1]).toLocaleString()+'</span><span class="legend-pct">'+pct+'%</span>';legend.appendChild(div);});
 }
@@ -1597,6 +1617,60 @@ function esc(s){
 }
 
 window.addEventListener('resize',function(){drawLineChart();});
+
+// ── THEME ──
+function toggleTheme(){
+  var isLight=document.body.classList.toggle('light');
+  var btn=document.getElementById('themeBtn');
+  btn.textContent=isLight?'🌙':'☀';
+  btn.title=isLight?'Switch to dark mode':'Switch to light mode';
+  try{localStorage.setItem('dash_theme',isLight?'light':'dark');}catch(e){}
+  // Redraw charts with new colors
+  setTimeout(function(){drawLineChart();drawDonut();},50);
+}
+// Restore theme on load
+(function(){
+  try{
+    var saved=localStorage.getItem('dash_theme');
+    if(saved==='light'){
+      document.body.classList.add('light');
+      var btn=document.getElementById('themeBtn');
+      if(btn){btn.textContent='🌙';btn.title='Switch to dark mode';}
+    }
+  }catch(e){}
+})();
+
+// ── FULLSCREEN ──
+function toggleFullscreen(){
+  var btn=document.getElementById('fsBtn');
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){
+    var el=document.documentElement;
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    btn.textContent='⛶';
+    btn.title='Exit fullscreen';
+    btn.style.borderColor='var(--accent)';
+    btn.style.color='var(--accent)';
+  } else {
+    if(document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    btn.textContent='⛶';
+    btn.title='Toggle fullscreen';
+    btn.style.borderColor='';
+    btn.style.color='';
+  }
+}
+document.addEventListener('fullscreenchange',function(){
+  var btn=document.getElementById('fsBtn');
+  if(!document.fullscreenElement){
+    btn.style.borderColor='';btn.style.color='';
+    btn.title='Toggle fullscreen';
+  } else {
+    btn.style.borderColor='var(--accent)';btn.style.color='var(--accent)';
+    btn.title='Exit fullscreen';
+  }
+  setTimeout(function(){drawLineChart();},100);
+});
 </script>
 </body>
 </html>
