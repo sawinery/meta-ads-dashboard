@@ -387,14 +387,15 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>SUB-AVATAR<i class="tip" data-tip="More specific sub-avatar or segment.">?</i></th>
           <th>WHAT WE TEST<i class="tip" data-tip="What are we testing with this ad set?">?</i></th>
           <th>WHY WE TEST<i class="tip" data-tip="Why are we testing this?">?</i></th>
-          <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
           <th>1ST SPEND DAY<i class="tip" data-tip="First day this ad set recorded spend.">?</i></th>
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
+          <th>7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
           <th>TOP VAR. PREVIEW</th>
           <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
+          <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
           <th onclick="sortTable('roas')">ROAS ↕<i class="tip" data-tip="Purchase value ÷ spend.">?</i></th>
           <th onclick="sortTable('cpa')">CPA ↕<i class="tip" data-tip="Spend ÷ purchases.">?</i></th>
           <th onclick="sortTable('conv_val')">PURCH. VALUE ↕<i class="tip" data-tip="Total revenue attributed.">?</i></th>
@@ -1068,6 +1069,44 @@ function getSpendRamp(adSet){
   });
 }
 
+function getCampPerfDuring7Days(adSet){
+  // Get the first 7 days this adSet had spend
+  var adRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
+  if(!adRows.length) return null;
+  var daySpend={};
+  adRows.forEach(function(r){var d=String(r.day).slice(0,10);daySpend[d]=(daySpend[d]||0)+r.spend;});
+  var first7=Object.keys(daySpend).sort().slice(0,7);
+  if(!first7.length) return null;
+  // Get ALL campaign rows during those 7 days
+  var campRows=allData.filter(function(r){
+    return r.campaign===activeCamp&&first7.indexOf(String(r.day).slice(0,10))!==-1;
+  });
+  var spend=0,purchases=0,cv=0;
+  campRows.forEach(function(r){spend+=r.spend;purchases+=r.purchases;cv+=r.conv_val;});
+  return {
+    roas: spend>0?cv/spend:0,
+    cpa: purchases>0?spend/purchases:0,
+    days: first7.length
+  };
+}
+
+function campPerf7Html(adSet){
+  var perf=getCampPerfDuring7Days(adSet);
+  if(!perf) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var roasColor=perf.roas>=3?'var(--accent)':perf.roas>=2?'var(--warn)':'var(--red)';
+  return '<div style="display:flex;flex-direction:column;gap:4px;min-width:90px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+    +'<span style="font-family:var(--mono);font-size:10px;color:var(--muted2);">ROAS</span>'
+    +'<span style="font-family:var(--mono);font-size:12px;font-weight:600;color:'+roasColor+';">'+(perf.roas>0?perf.roas.toFixed(2)+'x':'-')+'</span>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+    +'<span style="font-family:var(--mono);font-size:10px;color:var(--muted2);">CPA</span>'
+    +'<span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--red);">'+(perf.cpa>0?'$'+perf.cpa.toFixed(0):'-')+'</span>'
+    +'</div>'
+    +'<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:1px;">'+perf.days+'d window</div>'
+    +'</div>';
+}
+
 function spendRampHtml(adSet){
   var ramp=getSpendRamp(adSet);
   if(!ramp.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
@@ -1161,20 +1200,21 @@ function renderTable(){
     var html=
       '<td style="white-space:normal;word-break:break-word;min-width:220px;max-width:300px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
       +typeDropdownCell(a.adSet, cd.adType||'')
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:110px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'coreAvatar',cd.coreAvatar||'','Core avatar…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:120px;">'+editableDiv(a.adSet,'subAvatar',cd.subAvatar||'','Sub-avatar…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;max-width:260px;">'+editableDiv(a.adSet,'whatTesting',cd.whatTesting||'','What are we testing?')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;max-width:260px;">'+editableDiv(a.adSet,'whyTesting',cd.whyTesting||'','Why are we testing?')+'</td>'
-      +briefCell(a.adSet, cd.briefUrl||'')
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:160px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:200px;">'+editableDiv(a.adSet,'coreAvatar',cd.coreAvatar||'','Core avatar…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:200px;">'+editableDiv(a.adSet,'subAvatar',cd.subAvatar||'','Sub-avatar…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:280px;max-width:400px;">'+editableDiv(a.adSet,'whatTesting',cd.whatTesting||'','What are we testing?')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:280px;max-width:400px;">'+editableDiv(a.adSet,'whyTesting',cd.whyTesting||'','Why are we testing?')+'</td>'
       +'<td onclick="event.stopPropagation();"><span class="first-day-badge">'+getFirstSpendDay(a.adSet)+'</span></td>'
       +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:80px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
+      +'<td onclick="event.stopPropagation();">'+campPerf7Html(a.adSet)+'</td>'
       +mediaThumbCell(a.adSet, topAd, mediaUrl)
       +resultDropdownCell(a.adSet, cd.result||'')
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:220px;max-width:320px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:300px;max-width:440px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
+      +briefCell(a.adSet, cd.briefUrl||'')
       +'<td style="font-family:var(--mono);color:var(--warn);font-weight:600;">'+(a.roas>0?a.roas.toFixed(2)+'x':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--red);">'+(a.cpa>0?'$'+a.cpa.toFixed(2):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--accent2);">'+(a.conv_val>0?'$'+Math.round(a.conv_val).toLocaleString():'-')+'</td>'
