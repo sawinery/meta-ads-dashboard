@@ -1134,7 +1134,7 @@ function campPerf7Html(adSet){
     var h=Math.max(3,Math.round(v/maxRoas*26));
     var color=v>=3?'var(--accent)':v>=2?'var(--warn)':'var(--red)';
     return '<div class="ramp-bar-wrap" style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">'
-      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;">D'+(i+1)+': '+(v>0?v.toFixed(2)+'x':'-')+'</div>'
+      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.15);">D'+(i+1)+': '+(v>0?v.toFixed(2)+'x':'-')+'</div>'
       +'<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" onmouseenter="this.previousSibling.style.opacity=1" onmouseleave="this.previousSibling.style.opacity=0"></div>'
       +'</div>';
   }).join('');
@@ -1156,7 +1156,7 @@ function spendRampHtml(adSet){
     var color=v>20?'var(--accent)':v>10?'var(--warn)':'var(--muted2)';
     // Use a wrapper with CSS tooltip via data-tip
     return '<div class="ramp-bar-wrap" style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">'
-      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;">D'+(i+1)+': '+v.toFixed(1)+'%</div>'
+      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.15);">D'+(i+1)+': '+v.toFixed(1)+'%</div>'
       +'<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" onmouseenter="this.previousSibling.style.opacity=1" onmouseleave="this.previousSibling.style.opacity=0"></div>'
       +'</div>';
   }).join('');
