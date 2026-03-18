@@ -228,6 +228,54 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 .toast.error{border-color:var(--red);color:var(--red);}
 
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);}.charts-row{grid-template-columns:1fr;}.drawer{width:100%;}}
+
+/* ── EDITABLE FIELDS IMPROVED ── */
+.editable-val{min-height:24px;cursor:text;border-radius:4px;padding:5px 7px;transition:background 0.15s;font-size:12px;line-height:1.5;word-break:break-word;}
+.editable-val:not(.empty){color:var(--text);}
+.editable-val.empty{color:var(--muted);font-style:italic;font-size:11px;}
+.admin-mode .editable-val{border:1px solid var(--border2);background:rgba(255,255,255,0.02);}
+.admin-mode .editable-val:hover{background:var(--surface2);border-color:var(--muted);}
+.admin-mode .editable-val:focus{background:var(--surface2);border-color:var(--accent);outline:none;}
+
+/* ── TYPE DROPDOWN ── */
+.type-select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:4px;padding:4px 8px;font-family:var(--mono);font-size:11px;cursor:pointer;outline:none;width:100%;}
+.type-select:focus{border-color:var(--accent);}
+.type-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:600;}
+.type-new{background:rgba(139,92,246,0.15);color:var(--purple);}
+.type-iter{background:rgba(14,165,233,0.12);color:var(--accent2);}
+.type-none{background:var(--surface2);color:var(--muted2);}
+
+/* ── MEDIA THUMB ── */
+.media-thumb{width:52px;height:40px;border-radius:4px;overflow:hidden;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative;}
+.media-thumb img{width:100%;height:100%;object-fit:cover;}
+.media-thumb video{width:100%;height:100%;object-fit:cover;}
+.media-thumb .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);}
+.media-thumb .play-overlay svg{width:12px;height:12px;fill:#fff;}
+.media-thumb-empty{color:var(--muted);font-size:16px;}
+.media-add-btn{font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;padding:2px 6px;border:1px dashed var(--border2);border-radius:3px;white-space:nowrap;margin-top:3px;}
+.media-add-btn:hover{border-color:var(--accent);color:var(--accent);}
+.media-cell{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;}
+
+/* ── SPEND RAMP MINI CHART ── */
+.ramp-cell{display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
+.ramp-bars{display:flex;align-items:flex-end;gap:2px;height:28px;}
+.ramp-bar{width:7px;border-radius:2px 2px 0 0;background:var(--accent);opacity:0.7;transition:opacity 0.15s;cursor:default;}
+.ramp-bar:hover{opacity:1;}
+.ramp-pct{font-family:var(--mono);font-size:10px;color:var(--muted2);}
+
+/* ── VIDEO/IMAGE MODAL ── */
+.media-modal{width:700px;max-width:95vw;}
+.media-preview{width:100%;border-radius:8px;background:#000;margin-bottom:14px;display:none;max-height:380px;object-fit:contain;}
+.media-img-preview{width:100%;border-radius:8px;margin-bottom:14px;display:none;max-height:380px;object-fit:contain;}
+.media-type-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.media-type-tab{padding:5px 14px;border:1px solid var(--border2);border-radius:3px;font-family:var(--mono);font-size:11px;color:var(--muted2);cursor:pointer;background:none;}
+.media-type-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.08);}
+
+/* ── AD CARD VIDEO ── */
+.card-media-wrap{border-radius:8px;overflow:hidden;background:#000;margin-bottom:10px;position:relative;max-height:180px;}
+.card-media-wrap video,.card-media-wrap img{width:100%;max-height:180px;display:block;object-fit:cover;}
+.card-media-wrap .card-play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);cursor:pointer;}
+.card-media-wrap .card-play-btn svg{width:32px;height:32px;fill:rgba(255,255,255,0.9);}
 </style>
 </head>
 <body>
@@ -324,9 +372,14 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
       <table>
         <thead><tr>
           <th onclick="sortTable('adSet')">AD SET ↕</th>
-          <th>VIDEO</th>
+          <th>TYPE<i class="tip" data-tip="New Concept or Iteration — classify this ad set's creative approach.">?</i></th>
+          <th>ANGLE<i class="tip" data-tip="Creative angle used in this ad set.">?</i></th>
+          <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
+          <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
+          <th>MEDIA</th>
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
+          <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
           <th onclick="sortTable('roas')">ROAS ↕<i class="tip" data-tip="Purchase value ÷ spend.">?</i></th>
           <th onclick="sortTable('cpa')">CPA ↕<i class="tip" data-tip="Spend ÷ purchases.">?</i></th>
           <th onclick="sortTable('conv_val')">PURCH. VALUE ↕<i class="tip" data-tip="Total revenue attributed.">?</i></th>
@@ -338,9 +391,6 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th onclick="sortTable('aov')">AOV ↕<i class="tip" data-tip="Average order value.">?</i></th>
           <th onclick="sortTable('atc')">ATC ↕<i class="tip" data-tip="Adds to cart.">?</i></th>
           <th onclick="sortTable('days')">DAYS ↕<i class="tip" data-tip="Days with active spend.">?</i></th>
-          <th>ANGLE<i class="tip" data-tip="Creative angle / positioning used in this ad set.">?</i></th>
-          <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
-          <th>LEARNING<i class="tip" data-tip="Notes and insights from testing this ad set.">?</i></th>
         </tr></thead>
         <tbody id="adSetBody"></tbody>
       </table>
@@ -403,14 +453,20 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
   </div>
 </div>
 
-<!-- Video Modal -->
+<!-- Media Modal -->
 <div class="modal-overlay" id="videoModal">
-  <div class="modal video-modal">
-    <div class="modal-title" id="videoModalTitle">Ad Video</div>
-    <video id="videoPlayer" controls></video>
-    <iframe id="videoFrame" allowfullscreen></iframe>
-    <div style="margin-bottom:6px;font-family:var(--mono);font-size:11px;color:var(--muted2);" id="videoEditLabel" style="display:none;"></div>
-    <input class="video-url-input" id="videoUrlInput" placeholder="Paste Dropbox video link…" style="display:none;">
+  <div class="modal media-modal">
+    <div class="modal-title" id="videoModalTitle">Ad Media</div>
+    <video id="videoPlayer" class="media-preview" controls></video>
+    <img id="imagePlayer" class="media-img-preview">
+    <div id="mediaEditSection" style="display:none;">
+      <div class="media-type-tabs">
+        <button class="media-type-tab active" id="tabVideo" onclick="switchMediaType('video')">🎬 Video</button>
+        <button class="media-type-tab" id="tabImage" onclick="switchMediaType('image')">🖼 Image</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:6px;" id="videoEditLabel"></div>
+      <input class="video-url-input" id="videoUrlInput" placeholder="Paste Dropbox link (video or image)…">
+    </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('videoModal')">Close</button>
       <button class="btn primary" id="videoSaveBtn" onclick="saveVideoUrl()" style="display:none;">Save Link</button>
@@ -496,8 +552,11 @@ async function loadCustomData(){
     if(r.awareness_level) map[key].awareness = r.awareness_level;
     if(r.learning) map[key].learning = r.learning;
     if(r.ad && r.ad !== '' && r.video_url) map[key].videos[r.ad] = r.video_url;
-    // top-level video (adSet video = top spender) — ad_name is empty string
-    if((!r.ad || r.ad === '') && r.video_url) map[key].video_url = r.video_url;
+    // top-level record (ad is null or empty) — angle/awareness/learning/ad_type/video_url
+    if((!r.ad || r.ad === '')){
+      if(r.video_url) map[key].video_url = r.video_url;
+      if(r.ad_type) map[key].adType = r.ad_type;
+    }
   });
   return map;
 }
@@ -911,6 +970,91 @@ function sortTable(key){
   renderTable();
 }
 
+function getSpendRamp(adSet){
+  var allRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp;});
+  if(!allRows.length) return [];
+  var daySpend={};
+  allRows.forEach(function(r){if(r.spend>0){daySpend[String(r.day).slice(0,10)]=(daySpend[String(r.day).slice(0,10)]||0)+r.spend;}});
+  var spendDays=Object.keys(daySpend).sort();
+  if(!spendDays.length) return [];
+  var first7=spendDays.slice(0,7);
+  var campDaySpend={};
+  allData.filter(function(r){return r.campaign===activeCamp;}).forEach(function(r){
+    var d=String(r.day).slice(0,10);campDaySpend[d]=(campDaySpend[d]||0)+r.spend;
+  });
+  return first7.map(function(d){
+    var cs=campDaySpend[d]||0,as=daySpend[d]||0;
+    return cs>0?as/cs*100:0;
+  });
+}
+
+function spendRampHtml(adSet){
+  var ramp=getSpendRamp(adSet);
+  if(!ramp.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var maxPct=Math.max.apply(null,ramp.concat([1]));
+  var avg=(ramp.reduce(function(a,b){return a+b;},0)/ramp.length).toFixed(1);
+  var bars=ramp.map(function(v,i){
+    var h=Math.max(3,Math.round(v/maxPct*26));
+    var color=v>20?'var(--accent)':v>10?'var(--warn)':'var(--muted2)';
+    return '<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" title="Day '+(i+1)+': '+v.toFixed(1)+'%"></div>';
+  }).join('');
+  return '<div class="ramp-cell"><div class="ramp-bars">'+bars+'</div><span class="ramp-pct">avg '+avg+'%/day</span></div>';
+}
+
+function isImageUrl(url){
+  if(!url) return false;
+  return /\.(jpg|jpeg|png|gif|webp)/i.test(url.split('?')[0]);
+}
+
+function mediaThumbCell(adSet, topAd, mediaUrl){
+  var cell='<td onclick="event.stopPropagation();" style="min-width:70px;"><div class="media-cell">';
+  if(mediaUrl){
+    var directUrl=toDirectDropboxUrl(mediaUrl);
+    var isImg=isImageUrl(mediaUrl);
+    cell+='<div class="media-thumb" onclick="openMediaPlayer(\'' + '\'+esc(mediaUrl)+\'\',\'+(isImg?\'image\':\'video\')+\'\',\''+esc(adSet)+'\')\"">';
+    if(isImg){
+      cell+='<img src=\"'+directUrl+'\" onerror=\"this.parentNode.innerHTML=\'<span class=media-thumb-empty>🖼</span>\'">';
+    } else {
+      cell+='<video src=\"'+directUrl+'\" muted preload=\"metadata\" style=\"width:100%;height:100%;object-fit:cover;\" onerror=\"this.parentNode.innerHTML=\'<span class=media-thumb-empty>▶</span>\'\"></video>'
+           +'<div class=\"play-overlay\"><svg viewBox=\"0 0 10 10\"><polygon points=\"2,1 9,5 2,9\"/></svg></div>';
+    }
+    cell+='</div>';
+  } else {
+    cell+='<div class="media-thumb" style="cursor:'+(isAdmin?'pointer':'default')+';">📷</div>';
+  }
+  if(isAdmin){
+    cell+='<span class="media-add-btn" onclick="openVideoEdit(\''+esc(adSet)+'\',\''+esc(topAd||'')+'\',\''+esc(mediaUrl||'')+'\')">'+(mediaUrl?'✎':'+ Add')+'</span>';
+  }
+  cell+='</div></td>';
+  return cell;
+}
+
+function typeDropdownCell(adSet, val){
+  var cell='<td onclick="event.stopPropagation();" style="min-width:120px;">';
+  if(isAdmin){
+    cell+='<select class="type-select" onchange="saveTypeField(this,\''+esc(adSet)+'\')">'
+      +'<option value="">—</option>'
+      +'<option value="New Concept"'+(val==='New Concept'?' selected':'')+'>New Concept</option>'
+      +'<option value="Iteration"'+(val==='Iteration'?' selected':'')+'>Iteration</option>'
+      +'</select>';
+  } else {
+    if(val){var cls=val==='New Concept'?'type-new':'type-iter';cell+='<span class="type-badge '+cls+'">'+val+'</span>';}
+    else cell+='<span style="color:var(--muted);font-size:11px;">—</span>';
+  }
+  cell+='</td>';
+  return cell;
+}
+
+async function saveTypeField(el, adSet){
+  var val=el.value;
+  if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',adType:'',videos:{}};
+  customData[adSet].adType=val;
+  try{
+    await upsertCustom(adSet, null, {ad_type:val});
+    showToast('Saved','success');
+  }catch(e){showToast('Save failed','error');}
+}
+
 function renderTable(){
   var adSets=getAdSets();
   if(searchTerm)adSets=adSets.filter(function(a){return a.adSet.toLowerCase().indexOf(searchTerm)!==-1;});
@@ -921,26 +1065,20 @@ function renderTable(){
   adSets.forEach(function(a){
     var cd=customData[a.adSet]||{};
     var topAd=getTopAd(a.adSet);
-    var videoUrl=cd.videos&&topAd&&cd.videos[topAd]?cd.videos[topAd]:(cd.video_url||'');
+    var mediaUrl=cd.videos&&topAd&&cd.videos[topAd]?cd.videos[topAd]:(cd.video_url||'');
     var barW=(a.spend/maxSpend*100).toFixed(1);
-
     var tr=document.createElement('tr');tr.className='adset-row';
 
-    // Video cell
-    var videoCell='<td class="video-cell" onclick="event.stopPropagation();">';
-    if(videoUrl){
-      videoCell+='<div class="play-btn" onclick="openVideoPlayer(\''+esc(videoUrl)+'\',\''+esc(a.adSet)+'\')" title="Play video"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>';
-    }
-    if(isAdmin){
-      videoCell+='<span class="add-video-btn" onclick="openVideoEdit(\''+esc(a.adSet)+'\',\''+esc(topAd||'')+'\',\''+esc(videoUrl)+'\')">'+(videoUrl?'✎':'+ Video')+'</span>';
-    }
-    videoCell+='</td>';
-
-    tr.innerHTML=
-      '<td style="white-space:normal;word-break:break-word;max-width:200px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
-      +videoCell
-      +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:90px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
+    var html=
+      '<td style="white-space:normal;word-break:break-word;max-width:180px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      +typeDropdownCell(a.adSet, cd.adType||'')
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:110px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:220px;max-width:300px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
+      +mediaThumbCell(a.adSet, topAd, mediaUrl)
+      +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:80px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
+      +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
       +'<td style="font-family:var(--mono);color:var(--warn);font-weight:600;">'+(a.roas>0?a.roas.toFixed(2)+'x':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--red);">'+(a.cpa>0?'$'+a.cpa.toFixed(2):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--accent2);">'+(a.conv_val>0?'$'+Math.round(a.conv_val).toLocaleString():'-')+'</td>'
@@ -951,16 +1089,16 @@ function renderTable(){
       +'<td style="font-family:var(--mono);color:var(--green);">'+(a.cvr>0?a.cvr.toFixed(2)+'%':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--warn);">'+(a.aov>0?'$'+a.aov.toFixed(0):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--muted2);">'+(a.atc>0?Math.round(a.atc):'-')+'</td>'
-      +'<td style="font-family:var(--mono);color:var(--muted2);">'+a.days+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="max-width:200px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>';
+      +'<td style="font-family:var(--mono);color:var(--muted2);">'+a.days+'</td>';
 
+    tr.innerHTML=html;
     tr.onclick=function(){openDrawer(a.adSet);};
     tbody.appendChild(tr);
   });
   s('tableCount',adSets.length+' ad sets');
 }
+
+
 
 // ── EDITABLE FIELDS ──
 function editableDiv(adSet, field, val, placeholder){
@@ -997,53 +1135,45 @@ async function saveEditableField(el){
 }
 
 // ── VIDEO ──
-function openVideoPlayer(url, adSet){
+function openMediaPlayer(url, type, label){
   var vid=document.getElementById('videoPlayer');
-  var frame=document.getElementById('videoFrame');
-  var saveBtn=document.getElementById('videoSaveBtn');
-  var urlInput=document.getElementById('videoUrlInput');
-  var editLabel=document.getElementById('videoEditLabel');
-  document.getElementById('videoModalTitle').textContent=adSet;
-  vid.style.display='none';frame.style.display='none';saveBtn.style.display='none';urlInput.style.display='none';editLabel.style.display='none';
-  // Convert Dropbox share URL to direct link
+  var img=document.getElementById('imagePlayer');
+  document.getElementById('videoModalTitle').textContent=label||'Ad Media';
+  document.getElementById('mediaEditSection').style.display='none';
+  document.getElementById('videoSaveBtn').style.display='none';
+  vid.style.display='none';img.style.display='none';
   var directUrl=toDirectDropboxUrl(url);
-  vid.src=directUrl;
-  vid.style.display='block';
+  if(type==='image'||isImageUrl(url)){
+    img.src=directUrl;img.style.display='block';
+  } else {
+    vid.src=directUrl;vid.style.display='block';
+  }
   openModal('videoModal');
 }
+// Keep old name as alias for backward compat in drawer cards
+function openVideoPlayer(url, adSet){ openMediaPlayer(url,'video',adSet); }
 
 function openVideoEdit(adSet, adName, currentUrl){
   var vid=document.getElementById('videoPlayer');
-  var frame=document.getElementById('videoFrame');
-  var saveBtn=document.getElementById('videoSaveBtn');
-  var urlInput=document.getElementById('videoUrlInput');
-  var editLabel=document.getElementById('videoEditLabel');
-  document.getElementById('videoModalTitle').textContent='Set video for '+adSet;
-  vid.style.display='none';frame.style.display='none';
-  editLabel.style.display='block';
-  editLabel.textContent='Paste a Dropbox share link for the top-spending ad in this ad set:';
-  urlInput.style.display='block';
-  urlInput.value=currentUrl||'';
-  saveBtn.style.display='block';
+  var img=document.getElementById('imagePlayer');
+  vid.style.display='none';img.style.display='none';
+  document.getElementById('videoModalTitle').textContent='Set media for: '+(adName||adSet);
+  document.getElementById('mediaEditSection').style.display='block';
+  document.getElementById('videoEditLabel').textContent='Paste a Dropbox link (video .mp4 or image .jpg/.png):';
+  document.getElementById('videoUrlInput').value=currentUrl||'';
+  document.getElementById('videoSaveBtn').style.display='block';
+  // Show preview if existing
+  if(currentUrl){
+    var direct=toDirectDropboxUrl(currentUrl);
+    if(isImageUrl(currentUrl)){img.src=direct;img.style.display='block';}
+    else{vid.src=direct;vid.style.display='block';}
+  }
   videoTarget={adSet:adSet, ad:adName};
   openModal('videoModal');
 }
 
 function openVideoEditForAd(adSet, adName, currentUrl){
-  var vid=document.getElementById('videoPlayer');
-  var frame=document.getElementById('videoFrame');
-  var saveBtn=document.getElementById('videoSaveBtn');
-  var urlInput=document.getElementById('videoUrlInput');
-  var editLabel=document.getElementById('videoEditLabel');
-  document.getElementById('videoModalTitle').textContent='Set video for '+adName;
-  vid.style.display='none';frame.style.display='none';
-  editLabel.style.display='block';
-  editLabel.textContent='Paste a Dropbox share link for this ad:';
-  urlInput.style.display='block';
-  urlInput.value=currentUrl||'';
-  saveBtn.style.display='block';
-  videoTarget={adSet:adSet, ad:adName};
-  openModal('videoModal');
+  openVideoEdit(adSet, adName, currentUrl);
 }
 
 async function saveVideoUrl(){
@@ -1099,13 +1229,21 @@ function renderDrawer(){
   // Custom fields panel
   var cd=customData[drawerAdSet]||{};
   var readOnly=!isAdmin;
+  var typeOpts=['','New Concept','Iteration'];
+  var typeSelectHtml=isAdmin
+    ?'<select class="custom-field-input" id="dcType" style="cursor:pointer;">'
+      +typeOpts.map(function(o){return '<option value="'+o+'"'+(o===(cd.adType||'')?'selected':'')+'>'+( o||'— Select type')+' </option>';}).join('')
+      +'</select>'
+    :'<input class="custom-field-input" id="dcType" value="'+esc(cd.adType||'')+'" readonly>';
+
   var customHtml=
-    '<div class="custom-field"><div class="custom-field-label">Angle</div>'
+    '<div class="custom-field" style="min-width:140px;"><div class="custom-field-label">Type</div>'+typeSelectHtml+'</div>'
+    +'<div class="custom-field"><div class="custom-field-label">Angle</div>'
     +'<input class="custom-field-input" id="dcAngle" value="'+esc(cd.angle||'')+'" placeholder="e.g. Problem-aware, Benefit-led…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
     +'<div class="custom-field"><div class="custom-field-label">Awareness Level</div>'
     +'<input class="custom-field-input" id="dcAwareness" value="'+esc(cd.awareness||'')+'" placeholder="e.g. Cold, Warm, Hot…"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()"></div>'
-    +'<div class="custom-field" style="flex:2;min-width:300px;"><div class="custom-field-label">Learning</div>'
-    +'<textarea class="custom-field-input" id="dcLearning" rows="2" placeholder="What did we learn from testing this ad set?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.learning||'')+'</textarea></div>';
+    +'<div class="custom-field" style="flex:2;min-width:260px;"><div class="custom-field-label">Learning</div>'
+    +'<textarea class="custom-field-input" id="dcLearning" rows="3" placeholder="What did we learn from testing this ad set?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.learning||'')+'</textarea></div>';
   if(isAdmin) customHtml+='<button class="save-custom-btn" onclick="saveDrawerCustom(true)">Save</button>';
   document.getElementById('drawerCustom').innerHTML=customHtml;
 
@@ -1118,12 +1256,14 @@ async function saveDrawerCustom(explicit){
   var angle=document.getElementById('dcAngle')?document.getElementById('dcAngle').value.trim():'';
   var awareness=document.getElementById('dcAwareness')?document.getElementById('dcAwareness').value.trim():'';
   var learning=document.getElementById('dcLearning')?document.getElementById('dcLearning').value.trim():'';
-  if(!customData[drawerAdSet]) customData[drawerAdSet]={angle:'',awareness:'',learning:'',videos:{}};
+  var adType=document.getElementById('dcType')?document.getElementById('dcType').value.trim():'';
+  if(!customData[drawerAdSet]) customData[drawerAdSet]={angle:'',awareness:'',learning:'',adType:'',videos:{}};
   customData[drawerAdSet].angle=angle;
   customData[drawerAdSet].awareness=awareness;
   customData[drawerAdSet].learning=learning;
+  customData[drawerAdSet].adType=adType;
   try{
-    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning});
+    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning, ad_type:adType});
     if(explicit) showToast('Saved','success');
     renderTable();
   }catch(e){showToast('Save failed','error');}
@@ -1219,11 +1359,21 @@ function renderDailyPct(rows){
   document.getElementById('drawerBody').innerHTML=html;
 }
 
+function switchMediaType(type){
+  document.getElementById('tabVideo').classList.toggle('active',type==='video');
+  document.getElementById('tabImage').classList.toggle('active',type==='image');
+  document.getElementById('videoEditLabel').textContent=
+    type==='video'?'Paste Dropbox video link (.mp4):':'Paste Dropbox image link (.jpg, .png):';
+}
+
 // ── MODAL HELPERS ──
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
-  if(id==='videoModal'){var v=document.getElementById('videoPlayer');v.pause();v.src='';}
+  if(id==='videoModal'){
+    var v=document.getElementById('videoPlayer');v.pause();v.src='';
+    var i=document.getElementById('imagePlayer');i.src='';i.style.display='none';
+  }
 }
 document.querySelectorAll('.modal-overlay').forEach(function(el){
   el.addEventListener('click',function(e){if(e.target===el)closeModal(el.id);});
