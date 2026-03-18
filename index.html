@@ -383,9 +383,6 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>TYPE<i class="tip" data-tip="New Concept or Iteration — classify this ad set's creative approach.">?</i></th>
           <th>ANGLE<i class="tip" data-tip="Creative angle used in this ad set.">?</i></th>
           <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
-          <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
-          <th>TOP VAR. PREVIEW</th>
-          <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>AVATAR<i class="tip" data-tip="Core avatar / target customer this ad set speaks to.">?</i></th>
           <th>SUB-AVATAR<i class="tip" data-tip="More specific sub-avatar or segment.">?</i></th>
           <th>WHAT WE TEST<i class="tip" data-tip="What are we testing with this ad set?">?</i></th>
@@ -395,6 +392,9 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
+          <th>TOP VAR. PREVIEW</th>
+          <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
+          <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
           <th onclick="sortTable('roas')">ROAS ↕<i class="tip" data-tip="Purchase value ÷ spend.">?</i></th>
           <th onclick="sortTable('cpa')">CPA ↕<i class="tip" data-tip="Spend ÷ purchases.">?</i></th>
           <th onclick="sortTable('conv_val')">PURCH. VALUE ↕<i class="tip" data-tip="Total revenue attributed.">?</i></th>
@@ -1163,9 +1163,6 @@ function renderTable(){
       +typeDropdownCell(a.adSet, cd.adType||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:110px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
-      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:220px;max-width:300px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
-      +mediaThumbCell(a.adSet, topAd, mediaUrl)
-      +resultDropdownCell(a.adSet, cd.result||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'coreAvatar',cd.coreAvatar||'','Core avatar…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:120px;">'+editableDiv(a.adSet,'subAvatar',cd.subAvatar||'','Sub-avatar…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;max-width:260px;">'+editableDiv(a.adSet,'whatTesting',cd.whatTesting||'','What are we testing?')+'</td>'
@@ -1175,6 +1172,9 @@ function renderTable(){
       +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:80px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
+      +mediaThumbCell(a.adSet, topAd, mediaUrl)
+      +resultDropdownCell(a.adSet, cd.result||'')
+      +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:220px;max-width:320px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--warn);font-weight:600;">'+(a.roas>0?a.roas.toFixed(2)+'x':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--red);">'+(a.cpa>0?'$'+a.cpa.toFixed(2):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--accent2);">'+(a.conv_val>0?'$'+Math.round(a.conv_val).toLocaleString():'-')+'</td>'
