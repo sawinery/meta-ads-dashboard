@@ -996,9 +996,13 @@ function spendRampHtml(adSet){
   var bars=ramp.map(function(v,i){
     var h=Math.max(3,Math.round(v/maxPct*26));
     var color=v>20?'var(--accent)':v>10?'var(--warn)':'var(--muted2)';
-    return '<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" title="Day '+(i+1)+': '+v.toFixed(1)+'%"></div>';
+    // Use a wrapper with CSS tooltip via data-tip
+    return '<div class="ramp-bar-wrap" style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">'
+      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#0d1117;border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;">D'+(i+1)+': '+v.toFixed(1)+'%</div>'
+      +'<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" onmouseenter="this.previousSibling.style.opacity=1" onmouseleave="this.previousSibling.style.opacity=0"></div>'
+      +'</div>';
   }).join('');
-  return '<div class="ramp-cell"><div class="ramp-bars">'+bars+'</div><span class="ramp-pct">avg '+avg+'%/day</span></div>';
+  return '<div class="ramp-cell"><div class="ramp-bars" style="align-items:flex-end;">'+bars+'</div><span class="ramp-pct">avg '+avg+'%/day</span></div>';
 }
 
 function isImageUrl(url){
@@ -1007,26 +1011,31 @@ function isImageUrl(url){
 }
 
 function mediaThumbCell(adSet, topAd, mediaUrl){
-  var cell='<td onclick="event.stopPropagation();" style="min-width:70px;"><div class="media-cell">';
+  // Store URLs in a global map so onclick can reference them safely
+  var key='murl_'+Math.random().toString(36).slice(2);
+  window[key]=mediaUrl||'';
+  window[key+'_as']=adSet;
+  window[key+'_ta']=topAd||'';
+  var isImg=isImageUrl(mediaUrl);
+  var directUrl=toDirectDropboxUrl(mediaUrl||'');
+
+  var inner='';
   if(mediaUrl){
-    var directUrl=toDirectDropboxUrl(mediaUrl);
-    var isImg=isImageUrl(mediaUrl);
-    cell+='<div class="media-thumb" onclick="openMediaPlayer(\'' + '\'+esc(mediaUrl)+\'\',\'+(isImg?\'image\':\'video\')+\'\',\''+esc(adSet)+'\')\"">';
+    var mediaType=isImg?'image':'video';
+    var thumbContent='';
     if(isImg){
-      cell+='<img src=\"'+directUrl+'\" onerror=\"this.parentNode.innerHTML=\'<span class=media-thumb-empty>🖼</span>\'">';
+      thumbContent='<img src="'+directUrl+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">';
     } else {
-      cell+='<video src=\"'+directUrl+'\" muted preload=\"metadata\" style=\"width:100%;height:100%;object-fit:cover;\" onerror=\"this.parentNode.innerHTML=\'<span class=media-thumb-empty>▶</span>\'\"></video>'
-           +'<div class=\"play-overlay\"><svg viewBox=\"0 0 10 10\"><polygon points=\"2,1 9,5 2,9\"/></svg></div>';
+      thumbContent='<video src="'+directUrl+'" muted preload="metadata" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'"></video>'
+                  +'<div class="play-overlay"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>';
     }
-    cell+='</div>';
+    inner='<div class="media-thumb" onclick="openMediaPlayer(window[\''+key+'\'],\''+mediaType+'\',window[\''+key+'_as\'])">'+thumbContent+'</div>';
   } else {
-    cell+='<div class="media-thumb" style="cursor:'+(isAdmin?'pointer':'default')+';">📷</div>';
+    inner='<div class="media-thumb" style="cursor:'+(isAdmin?'pointer':'default')+';font-size:18px;">📷</div>';
   }
-  if(isAdmin){
-    cell+='<span class="media-add-btn" onclick="openVideoEdit(\''+esc(adSet)+'\',\''+esc(topAd||'')+'\',\''+esc(mediaUrl||'')+'\')">'+(mediaUrl?'✎':'+ Add')+'</span>';
-  }
-  cell+='</div></td>';
-  return cell;
+  var addBtn=isAdmin?'<span class="media-add-btn" onclick="openVideoEdit(window[\''+key+'_as\'],window[\''+key+'_ta\'],window[\''+key+'\'])">'+(mediaUrl?'✎':'+ Add')+'</span>':'';
+
+  return '<td onclick="event.stopPropagation();" style="min-width:70px;"><div class="media-cell">'+inner+addBtn+'</div></td>';
 }
 
 function typeDropdownCell(adSet, val){
