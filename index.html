@@ -1031,7 +1031,7 @@ function mediaThumbCell(adSet, topAd, mediaUrl){
     }
     inner='<div class="media-thumb" onclick="openMediaPlayer(window[\''+key+'\'],\''+mediaType+'\',window[\''+key+'_as\'])">'+thumbContent+'</div>';
   } else {
-    inner='<div class="media-thumb" style="cursor:'+(isAdmin?'pointer':'default')+';font-size:18px;">📷</div>';
+    inner='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);">N/A</div>';
   }
   var addBtn=isAdmin?'<span class="media-add-btn" onclick="openVideoEdit(window[\''+key+'_as\'],window[\''+key+'_ta\'],window[\''+key+'\'])">'+(mediaUrl?'✎':'+ Add')+'</span>':'';
 
