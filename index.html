@@ -376,7 +376,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>ANGLE<i class="tip" data-tip="Creative angle used in this ad set.">?</i></th>
           <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
-          <th>MEDIA</th>
+          <th>TOP VAR. PREVIEW</th>
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
@@ -1079,7 +1079,7 @@ function renderTable(){
     var tr=document.createElement('tr');tr.className='adset-row';
 
     var html=
-      '<td style="white-space:normal;word-break:break-word;max-width:180px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      '<td style="white-space:normal;word-break:break-word;min-width:220px;max-width:300px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
       +typeDropdownCell(a.adSet, cd.adType||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:130px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:110px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
