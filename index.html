@@ -130,6 +130,13 @@ th.sorted{color:var(--accent);}
 td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tr.adset-row:hover td{background:rgba(255,255,255,0.02);cursor:pointer;}
+/* Sticky first two columns */
+th:nth-child(1),td:nth-child(1){position:sticky;left:0;z-index:3;background:var(--surface2);}
+th:nth-child(2),td:nth-child(2){position:sticky;left:220px;z-index:3;background:var(--surface2);}
+td:nth-child(1){background:var(--surface);z-index:2;}
+td:nth-child(2){background:var(--surface);z-index:2;}
+tr.adset-row:hover td:nth-child(1),tr.adset-row:hover td:nth-child(2){background:rgba(255,255,255,0.035);}
+th:nth-child(1)::after,th:nth-child(2)::after,td:nth-child(1)::after,td:nth-child(2)::after{content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;background:var(--border);}
 .spend-bar{display:flex;align-items:center;gap:8px;}
 .bar-bg{width:80px;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;flex-shrink:0;}
 .bar-fill{height:100%;background:var(--accent);border-radius:3px;}
@@ -226,6 +233,30 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 .btn-theme{padding:4px 10px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1;}
 .btn-theme:hover{border-color:var(--accent);color:var(--accent);}
 
+/* Markdown rendered output */
+.md-render{font-size:12px;line-height:1.6;color:var(--text);}
+.md-render p{margin:0 0 6px;}
+.md-render p:last-child{margin-bottom:0;}
+.md-render ul,.md-render ol{margin:4px 0 6px 16px;padding:0;}
+.md-render li{margin-bottom:2px;}
+.md-render strong{font-weight:600;color:var(--text);}
+.md-render em{font-style:italic;}
+.md-render code{font-family:var(--mono);font-size:11px;background:var(--surface2);padding:1px 4px;border-radius:3px;}
+.md-render h3{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin:8px 0 4px;}
+
+/* Rich text editor */
+.rich-editor-wrap{border:1px solid var(--border2);border-radius:6px;overflow:hidden;background:var(--surface2);}
+.rich-editor-wrap:focus-within{border-color:var(--accent);}
+.rich-toolbar{display:flex;gap:2px;padding:5px 7px;border-bottom:1px solid var(--border2);background:var(--surface);flex-wrap:wrap;}
+.rich-btn{padding:3px 7px;border:1px solid transparent;border-radius:3px;background:none;color:var(--muted2);font-size:11px;cursor:pointer;font-family:var(--mono);line-height:1;transition:all 0.1s;}
+.rich-btn:hover{background:var(--surface2);border-color:var(--border2);color:var(--text);}
+.rich-btn.active{background:rgba(0,212,170,0.1);border-color:var(--accent);color:var(--accent);}
+.rich-btn-sep{width:1px;background:var(--border2);margin:2px 4px;align-self:stretch;}
+.rich-textarea{width:100%;padding:8px 10px;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.6;outline:none;resize:vertical;min-height:80px;}
+.rich-textarea[readonly]{opacity:0.6;cursor:default;}
+.rich-preview{padding:8px 10px;min-height:40px;}
+
+/* Fullscreen button */
 /* Fullscreen button */
 .btn-fullscreen{padding:4px 10px;background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:3px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s;line-height:1;}
 .btn-fullscreen:hover{border-color:var(--accent);color:var(--accent);}
@@ -394,7 +425,8 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th onclick="sortTable('adSet')">AD SET ↕</th>
+          <th onclick="sortTable('adSet')" style="width:220px;min-width:220px;max-width:220px;">AD SET ↕</th>
+          <th>TOP VAR. PREVIEW</th>
           <th>TYPE<i class="tip" data-tip="New Concept or Iteration — classify this ad set's creative approach.">?</i></th>
           <th>ANGLE<i class="tip" data-tip="Creative angle used in this ad set.">?</i></th>
           <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
@@ -407,7 +439,6 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
           <th>7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
-          <th>TOP VAR. PREVIEW</th>
           <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
           <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
@@ -522,6 +553,7 @@ function localDate(dt){
 }
 var allData=[], customData={};  // customData keyed by adSet name
 var isAdmin=false;
+var hiddenCampaigns={};
 var activeCamp=null, dateFrom='', dateTo='', searchTerm='', sortKey='spend', sortDir=-1;
 var chartMetric='spend', filteredData=[], chartDays=[], chartByCD={};
 var chartPad={l:52,r:16,t:12,b:28};
@@ -738,6 +770,8 @@ function exitAdmin(){
   document.getElementById('adminBtnLabel').textContent='Admin';
   document.getElementById('adminBtn').classList.remove('active');
   document.body.classList.remove('admin-mode');
+  var allCamps2=Object.keys(allData.reduce(function(a,r){a[r.campaign]=1;return a;},{})).sort();
+  renderCampBar(allCamps2);
   renderTable();
   if(drawerAdSet) renderDrawer();
 }
@@ -829,12 +863,43 @@ function pn(v){if(v===undefined||v===null||v==='')return 0;var n=parseFloat(Stri
 // ── DASHBOARD ──
 function renderCampBar(camps){
   var bar=document.getElementById('campBar');bar.innerHTML='';
+  // Load hidden campaigns from localStorage
+  try{var h=localStorage.getItem('dash_hidden_camps');if(h)hiddenCampaigns=JSON.parse(h);}catch(e){}
   camps.forEach(function(c){
+    var hidden=hiddenCampaigns[c];
+    var wrap=document.createElement('div');
+    wrap.style.cssText='display:flex;align-items:center;gap:3px;position:relative;';
     var btn=document.createElement('button');
-    btn.className='camp-chip'+(c===activeCamp?' active':'');
+    btn.className='camp-chip'+(c===activeCamp?' active':'')+(hidden?' camp-hidden':'');
     btn.textContent=c;
-    btn.onclick=function(){activeCamp=c;document.querySelectorAll('.camp-chip').forEach(function(b){b.classList.toggle('active',b.textContent===c);});updateAll();};
-    bar.appendChild(btn);
+    btn.style.opacity=hidden?'0.35':'1';
+    btn.onclick=function(){
+      if(hidden) return; // can't select hidden
+      activeCamp=c;
+      document.querySelectorAll('.camp-chip').forEach(function(b){b.classList.toggle('active',b.textContent===c);});
+      updateAll();
+    };
+    wrap.appendChild(btn);
+    if(isAdmin){
+      var hbtn=document.createElement('button');
+      hbtn.title=hidden?'Show campaign':'Hide campaign';
+      hbtn.style.cssText='padding:2px 5px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted2);font-size:10px;cursor:pointer;flex-shrink:0;';
+      hbtn.textContent=hidden?'👁':'✕';
+      hbtn.onclick=function(e){
+        e.stopPropagation();
+        hiddenCampaigns[c]=!hidden;
+        try{localStorage.setItem('dash_hidden_camps',JSON.stringify(hiddenCampaigns));}catch(e2){}
+        // If we just hid the active campaign, switch to first visible
+        if(!hidden&&activeCamp===c){
+          var visible=camps.filter(function(x){return !hiddenCampaigns[x];});
+          if(visible.length) activeCamp=visible[0];
+        }
+        renderCampBar(camps);
+        updateAll();
+      };
+      wrap.appendChild(hbtn);
+    }
+    bar.appendChild(wrap);
   });
 }
 
@@ -871,6 +936,11 @@ function setPreset(p){
 }
 
 function updateAll(){
+  // Skip if active campaign is hidden
+  if(hiddenCampaigns[activeCamp]){
+    var visible=Object.keys(allData.reduce(function(a,r){a[r.campaign]=1;return a;},{})).filter(function(c){return !hiddenCampaigns[c];});
+    if(visible.length) activeCamp=visible[0];
+  }
   filteredData=allData.filter(function(r){
     var d=String(r.day).slice(0,10);
     return r.campaign===activeCamp&&(!dateFrom||d>=dateFrom)&&(!dateTo||d<=dateTo);
@@ -938,8 +1008,23 @@ lineCanvas.addEventListener('mousemove',function(e){
   var byAS={};filteredData.forEach(function(r){if(!byAS[r.adSet])byAS[r.adSet]=0;byAS[r.adSet]+=r.spend;});
   var topAS=Object.keys(byAS).sort(function(a,b){return byAS[b]-byAS[a];}).slice(0,6);
   var tip=document.getElementById('chartTooltip');
-  var html='<div class="tt-date">'+day+'</div>';
-  topAS.forEach(function(as,ci){var v=getChartVal(as+'||'+day);if(!v)return;var fmt=chartMetric==='spend'||chartMetric==='cpa'?'$'+f2(v):chartMetric==='roas'?v.toFixed(2)+'x':fk(v);html+='<div class="tt-row"><div class="tt-dot" style="background:'+COLORS[ci%COLORS.length]+'"></div><span class="tt-label">'+as.slice(0,26)+'</span><span class="tt-val">'+fmt+'</span></div>';});
+  // Calculate campaign totals for the day
+  var dayRows=filteredData.filter(function(r){return String(r.day).slice(0,10)===day;});
+  var totSpend=0,totP=0,totCV=0,totReach=0;
+  dayRows.forEach(function(r){totSpend+=r.spend;totP+=r.purchases;totCV+=r.conv_val;totReach+=r.reach;});
+  var totVal=chartMetric==='spend'?totSpend:chartMetric==='cpa'?(totP>0?totSpend/totP:0):chartMetric==='roas'?(totSpend>0?totCV/totSpend:0):totReach;
+  var totFmt=chartMetric==='spend'?'$'+f2(totVal):chartMetric==='cpa'?(totVal>0?'$'+f2(totVal):'-'):chartMetric==='roas'?totVal.toFixed(2)+'x':fk(totVal);
+  var html='<div class="tt-date">'+day+'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 5px;border-bottom:1px solid var(--border2);margin-bottom:4px;">'
+    +'<span style="font-family:var(--mono);font-size:10px;color:var(--muted2);">CAMPAIGN TOTAL</span>'
+    +'<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);margin-left:12px;">'+totFmt+'</span>'
+    +'</div>';
+  // Per ad-set breakdown
+  topAS.forEach(function(as,ci){
+    var v=getChartVal(as+'||'+day);if(!v)return;
+    var fmt=chartMetric==='spend'||chartMetric==='cpa'?'$'+f2(v):chartMetric==='roas'?v.toFixed(2)+'x':fk(v);
+    html+='<div class="tt-row"><div class="tt-dot" style="background:'+COLORS[ci%COLORS.length]+'"></div><span class="tt-label">'+as.slice(0,24)+'</span><span class="tt-val">'+fmt+'</span></div>';
+  });
   tip.innerHTML=html;
   var tipX=idx/(chartDays.length-1)*cW+pad.l+10;if(tipX+170>W)tipX-=190;
   tip.style.left=tipX+'px';tip.style.top='8px';tip.classList.add('visible');
@@ -1237,7 +1322,8 @@ function renderTable(){
     var tr=document.createElement('tr');tr.className='adset-row';
 
     var html=
-      '<td style="white-space:normal;word-break:break-word;min-width:220px;max-width:300px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      '<td style="white-space:normal;word-break:break-word;width:220px;min-width:220px;max-width:220px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      +mediaThumbCell(a.adSet, topAd, mediaUrl)
       +typeDropdownCell(a.adSet, cd.adType||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:160px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
@@ -1250,7 +1336,6 @@ function renderTable(){
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
       +'<td onclick="event.stopPropagation();">'+campPerf7Html(a.adSet)+'</td>'
-      +mediaThumbCell(a.adSet, topAd, mediaUrl)
       +resultDropdownCell(a.adSet, cd.result||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:300px;max-width:440px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
       +briefCell(a.adSet, cd.briefUrl||'')
@@ -1276,6 +1361,93 @@ function renderTable(){
 
 
 // ── EDITABLE FIELDS ──
+// ── MARKDOWN ──
+function mdToHtml(text){
+  if(!text) return '';
+  var html=text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>');
+  // Lists
+  var lines=html.split('
+');
+  var out=[],inUl=false,inOl=false;
+  lines.forEach(function(line){
+    var ul=line.match(/^[-*] (.+)/);
+    var ol=line.match(/^\d+\. (.+)/);
+    if(ul){if(!inUl){out.push('<ul>');inUl=true;}if(inOl){out.push('</ol>');inOl=false;}out.push('<li>'+ul[1]+'</li>');}
+    else if(ol){if(!inOl){out.push('<ol>');inOl=true;}if(inUl){out.push('</ul>');inUl=false;}out.push('<li>'+ol[1]+'</li>');}
+    else{
+      if(inUl){out.push('</ul>');inUl=false;}
+      if(inOl){out.push('</ol>');inOl=false;}
+      if(line.trim()){out.push('<p>'+line+'</p>');}
+    }
+  });
+  if(inUl)out.push('</ul>');
+  if(inOl)out.push('</ol>');
+  return out.join('');
+}
+
+// Insert text/wrap selection in textarea
+function richInsert(textareaId, before, after){
+  var ta=document.getElementById(textareaId);
+  if(!ta) return;
+  var start=ta.selectionStart,end=ta.selectionEnd;
+  var sel=ta.value.substring(start,end);
+  var replacement=before+(sel||'text')+( after||'');
+  ta.value=ta.value.substring(0,start)+replacement+ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart=start+before.length;
+  ta.selectionEnd=start+before.length+(sel||'text').length;
+  ta.dispatchEvent(new Event('input'));
+}
+
+function richLine(textareaId, prefix){
+  var ta=document.getElementById(textareaId);
+  if(!ta) return;
+  var start=ta.selectionStart;
+  var lineStart=ta.value.lastIndexOf('
+',start-1)+1;
+  var line=ta.value.substring(lineStart,ta.selectionEnd);
+  // Toggle: if line already starts with prefix, remove it
+  if(line.startsWith(prefix)){
+    ta.value=ta.value.substring(0,lineStart)+line.substring(prefix.length)+ta.value.substring(ta.selectionEnd);
+  } else {
+    ta.value=ta.value.substring(0,lineStart)+prefix+line+ta.value.substring(ta.selectionEnd);
+  }
+  ta.focus();
+  ta.dispatchEvent(new Event('input'));
+}
+
+function richToolbar(taId){
+  return '<div class="rich-toolbar">'
+    +'<button class="rich-btn" title="Bold" onclick="richInsert(''+taId+'','**','**')"><b>B</b></button>'
+    +'<button class="rich-btn" title="Italic" onclick="richInsert(''+taId+'','*','*')"><i>I</i></button>'
+    +'<button class="rich-btn" title="Code" onclick="richInsert(''+taId+'','`','`')">` `</button>'
+    +'<div class="rich-btn-sep"></div>'
+    +'<button class="rich-btn" title="Bullet list" onclick="richLine(''+taId+'','- ')">• List</button>'
+    +'<button class="rich-btn" title="Numbered list" onclick="richLine(''+taId+'','1. ')">1. List</button>'
+    +'<button class="rich-btn" title="Heading" onclick="richLine(''+taId+'','### ')">H</button>'
+    +'<div class="rich-btn-sep"></div>'
+    +'<button class="rich-btn" title="New line" onclick="var ta=document.getElementById(''+taId+'');var s=ta.selectionStart;ta.value=ta.value.slice(0,s)+'\n'+ta.value.slice(s);ta.selectionStart=ta.selectionEnd=s+1;ta.focus();">↵</button>'
+    +'</div>';
+}
+
+function richEditorField(id, val, placeholder, readonly, rows){
+  rows=rows||3;
+  if(readonly){
+    if(!val||!val.trim()) return '<div style="color:var(--muted);font-style:italic;font-size:11px;">'+placeholder+'</div>';
+    return '<div class="md-render">'+mdToHtml(val)+'</div>';
+  }
+  return '<div class="rich-editor-wrap">'
+    +richToolbar(id)
+    +'<textarea class="rich-textarea" id="'+id+'" placeholder="'+placeholder+'" rows="'+rows+'">'+esc(val||'')+'</textarea>'
+    +'</div>';
+}
+
 function editableDiv(adSet, field, val, placeholder){
   var hasVal=val&&val.trim();
   return '<div class="editable-val'+(hasVal?'':' empty')+'" data-adset="'+esc(adSet)+'" data-field="'+field+'"'
@@ -1291,12 +1463,13 @@ async function saveEditableField(el){
   if(!isAdmin) return;
   var adSet=el.getAttribute('data-adset');
   var field=el.getAttribute('data-field');
+  // Get raw text (markdown) from contenteditable
   var val=el.innerText.trim();
   // Update local cache
   if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',videos:{}};
   customData[adSet][field]=val;
-  // Update DOM appearance
-  if(val){el.classList.remove('empty');}
+  // Update DOM — keep showing raw markdown in admin mode for easy re-editing
+  if(val){el.classList.remove('empty');el.textContent=val;}
   else{el.classList.add('empty');el.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:11px;">'+el.getAttribute('data-placeholder')+'</span>';}
   // Save to Supabase
   try{
@@ -1439,13 +1612,13 @@ function renderDrawer(){
     +'</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-top:2px;">'
     +'<div class="custom-field" style="flex:1;min-width:220px;"><div class="custom-field-label">What Are We Testing?</div>'
-    +'<textarea class="custom-field-input" id="dcWhatTesting" rows="2" placeholder="What hypothesis or creative element are we testing?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.whatTesting||'')+'</textarea></div>'
+    +richEditorField('dcWhatTesting',cd.whatTesting||'','What hypothesis or creative element are we testing?',readOnly,3)+'</div>'
     +'<div class="custom-field" style="flex:1;min-width:220px;"><div class="custom-field-label">Why Are We Testing?</div>'
-    +'<textarea class="custom-field-input" id="dcWhyTesting" rows="2" placeholder="What insight or reason is behind this test?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.whyTesting||'')+'</textarea></div>'
+    +richEditorField('dcWhyTesting',cd.whyTesting||'','What insight or reason is behind this test?',readOnly,3)+'</div>'
     +'</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-top:2px;">'
     +'<div class="custom-field" style="flex:2;min-width:260px;"><div class="custom-field-label">Learning</div>'
-    +'<textarea class="custom-field-input" id="dcLearning" rows="3" placeholder="What did we learn from testing this ad set?"'+(readOnly?' readonly':'')+' onblur="saveDrawerCustom()">'+esc(cd.learning||'')+'</textarea></div>'
+    +richEditorField('dcLearning',cd.learning||'','What did we learn from testing this ad set?',readOnly,4)+'</div>'
     +'<div class="custom-field" style="min-width:200px;"><div class="custom-field-label">Brief Link</div>'
     +(isAdmin?'<input class="custom-field-input brief-input" id="dcBriefUrl" value="'+esc(cd.briefUrl||'')+'" placeholder="https://…" onblur="saveDrawerCustom()">'
              :(cd.briefUrl?'<a class="brief-link" href="'+esc(cd.briefUrl)+'" target="_blank">📋 Open Brief</a>':'<span style="color:var(--muted);font-size:11px;">—</span>'))
