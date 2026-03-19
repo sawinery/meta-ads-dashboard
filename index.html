@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c23;--border:#1e2530;--border2:#252d3a;--text:#e2e8f0;--muted:#4a5568;--muted2:#6b7280;--accent:#00d4aa;--accent2:#0ea5e9;--warn:#f59e0b;--purple:#8b5cf6;--red:#ef4444;--pink:#ec4899;--green:#10b981;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
-body.light{--bg:#f4f6f9;--surface:#ffffff;--surface2:#f0f2f5;--border:#dde1e9;--border2:#c8cdd8;--text:#1a1f2e;--muted:#9aa0b0;--muted2:#6b7280;--accent:#00a882;--accent2:#0284c7;--warn:#d97706;--purple:#7c3aed;--red:#dc2626;--pink:#db2777;--green:#059669;}
+body.light{--bg:#eef0f4;--surface:#f5f6f9;--surface2:#e8eaef;--border:#d0d4dc;--border2:#b8bec9;--text:#1a1f2e;--muted:#8892a4;--muted2:#5c6680;--accent:#009975;--accent2:#0369a1;--warn:#b45309;--purple:#6d28d9;--red:#b91c1c;--pink:#be185d;--green:#047857;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;min-height:100vh;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
@@ -111,7 +111,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .legend-label{flex:1;font-size:11px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .legend-val{font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;}
 .legend-pct{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:32px;text-align:right;}
-.chart-tooltip{position:absolute;background:rgba(17,19,24,0.97);border:1px solid var(--border2);border-radius:5px;padding:10px 14px;font-family:var(--mono);font-size:11px;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:50;min-width:150px;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+.chart-tooltip{position:absolute;background:var(--surface);border:1px solid var(--border2);border-radius:5px;padding:10px 14px;font-family:var(--mono);font-size:11px;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:50;min-width:150px;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
 .chart-tooltip.visible{opacity:1;}
 .tt-date{color:var(--muted2);font-size:10px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border2);}
 .tt-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
@@ -338,6 +338,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 <div class="topbar">
   <div class="logo"><div class="logo-dot"></div>META ADS · DASHBOARD</div>
   <div class="topbar-right">
+    <div class="data-status" id="maxDateBadge" style="color:var(--accent);opacity:0.8;"></div>
     <div class="data-status" id="dataStatus">Loading…</div>
     <button class="btn-theme" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
     <button class="btn-fullscreen" id="fsBtn" onclick="toggleFullscreen()" title="Toggle fullscreen">⛶</button>
@@ -399,11 +400,12 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     <div class="panel">
       <div class="panel-header">
         <span class="panel-title" id="lineTitle">Daily Trend</span>
-        <div class="chart-tabs">
-          <button class="chart-tab active" onclick="setMetric('spend',this)">Spend</button>
-          <button class="chart-tab" onclick="setMetric('roas',this)">ROAS</button>
-          <button class="chart-tab" onclick="setMetric('cpa',this)">CPA</button>
-          <button class="chart-tab" onclick="setMetric('reach',this)">Reach</button>
+        <div class="chart-tabs" id="chartTabs">
+          <button class="chart-tab active" data-metric="spend" onclick="toggleMetric('spend',this)">Spend</button>
+          <button class="chart-tab" data-metric="roas" onclick="toggleMetric('roas',this)">ROAS</button>
+          <button class="chart-tab" data-metric="cpa" onclick="toggleMetric('cpa',this)">CPA</button>
+          <button class="chart-tab" data-metric="aov" onclick="toggleMetric('aov',this)">AOV</button>
+          <button class="chart-tab" data-metric="reach" onclick="toggleMetric('reach',this)">Reach</button>
         </div>
       </div>
       <div class="panel-body">
@@ -558,7 +560,7 @@ var allData=[], customData={};  // customData keyed by adSet name
 var isAdmin=false;
 var hiddenCampaigns={};
 var activeCamp=null, dateFrom='', dateTo='', searchTerm='', sortKey='spend', sortDir=-1;
-var chartMetric='spend', filteredData=[], chartDays=[], chartByCD={};
+var chartMetric='spend', activeMetrics={spend:true}, filteredData=[], chartDays=[], chartByCD={};
 var chartPad={l:52,r:16,t:12,b:28};
 var drawerAdSet=null, drawerTab='variations';
 var videoTarget={adSet:null, ad:null}; // which row/card we're editing video for
@@ -735,7 +737,10 @@ function initDashboard(){
 
   document.getElementById('dateFrom').value=dateFrom;
   document.getElementById('dateTo').value=dateTo;
+  var allDays2=Object.keys(allData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
+  var maxDate=allDays2[allDays2.length-1]||'';
   document.getElementById('dataStatus').textContent=activeCamp+' · '+dateFrom+' → '+dateTo;
+  document.getElementById('maxDateBadge').textContent='Data up to: '+maxDate;
 
   renderCampBar(camps);
   updateAll();
@@ -917,14 +922,14 @@ function resetDates(){
 function setPreset(p){
   var allDays=Object.keys(allData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   var lastInData=allDays[allDays.length-1];
-  var today=new Date();
-  var fmt=function(dt){return dt.toISOString().slice(0,10);}; // kept for compat
-  // Use local date to avoid timezone off-by-one
-  var todayStr=localDate(today),from,to;
+  // Use last data date as "today" so presets always show real data
+  var todayStr=lastInData;
+  var todayDt=new Date(lastInData+'T00:00:00');
+  var from,to;
   if(p==='today'){from=to=todayStr;}
-  else if(p==='yesterday'){var y=new Date(today);y.setDate(y.getDate()-1);from=to=localDate(y);}
-  else if(p==='7d'){var s=new Date(today);s.setDate(s.getDate()-6);from=localDate(s);to=lastInData;}
-  else if(p==='30d'){var s=new Date(today);s.setDate(s.getDate()-29);from=localDate(s);to=lastInData;}
+  else if(p==='yesterday'){var y=new Date(todayDt);y.setDate(y.getDate()-1);from=to=localDate(y);}
+  else if(p==='7d'){var s=new Date(todayDt);s.setDate(s.getDate()-6);from=localDate(s);to=lastInData;}
+  else if(p==='30d'){var s=new Date(todayDt);s.setDate(s.getDate()-29);from=localDate(s);to=lastInData;}
   else if(p==='month'){from=todayStr.slice(0,7)+'-01';to=lastInData;}
   from=from<allDays[0]?allDays[0]:from;
   to=to>lastInData?lastInData:to;
@@ -970,33 +975,103 @@ function updateKPIs(){
   s('kpiP',Math.round(p).toLocaleString());s('kpiPSub',cpa>0?'$'+cpa.toFixed(2)+' each':'-');
 }
 
-function setMetric(m,btn){chartMetric=m;document.querySelectorAll('.chart-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');drawLineChart();}
+function toggleMetric(m,btn){
+  if(activeMetrics[m]&&Object.keys(activeMetrics).filter(function(k){return activeMetrics[k];}).length===1){
+    // Don't deselect the last metric
+    return;
+  }
+  activeMetrics[m]=!activeMetrics[m];
+  btn.classList.toggle('active',!!activeMetrics[m]);
+  // Update chartMetric to first active for tooltip formatting
+  var active=Object.keys(activeMetrics).filter(function(k){return activeMetrics[k];});
+  chartMetric=active[0]||'spend';
+  drawLineChart();
+}
 
-function getChartVal(cd){var v=chartByCD[cd];if(!v)return 0;if(chartMetric==='spend')return v.spend;if(chartMetric==='cpa')return v.p>0?v.spend/v.p:0;if(chartMetric==='roas')return v.spend>0?v.cv/v.spend:0;if(chartMetric==='reach')return v.reach;return 0;}
+function getMetricVal(v, m){
+  if(!v) return 0;
+  if(m==='spend') return v.spend;
+  if(m==='cpa') return v.p>0?v.spend/v.p:0;
+  if(m==='roas') return v.spend>0?v.cv/v.spend:0;
+  if(m==='reach') return v.reach;
+  if(m==='aov') return v.p>0?v.cv/v.p:0;
+  return 0;
+}
+function getChartVal(cd){return getMetricVal(chartByCD[cd],chartMetric);}
+function fmtMetric(v,m){
+  if(m==='spend'||m==='cpa'||m==='aov') return v>0?'$'+f2(v):'-';
+  if(m==='roas') return v>0?v.toFixed(2)+'x':'-';
+  return fk(v);
+}
 
 function drawLineChart(){
   var canvas=document.getElementById('lineChart'),ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1;
-  var W=canvas.parentElement.offsetWidth||500,H=180;
+  var W=canvas.parentElement.offsetWidth||500,H=200;
   canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
   ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   chartDays=Object.keys(filteredData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
   if(chartDays.length<2)return;
   var byAS={};filteredData.forEach(function(r){if(!byAS[r.adSet])byAS[r.adSet]=0;byAS[r.adSet]+=r.spend;});
   var topAS=Object.keys(byAS).sort(function(a,b){return byAS[b]-byAS[a];}).slice(0,6);
-  chartByCD={};filteredData.forEach(function(r){var k=r.adSet+'||'+r.day;if(!chartByCD[k])chartByCD[k]={spend:0,p:0,cv:0,reach:0};chartByCD[k].spend+=r.spend;chartByCD[k].p+=r.purchases;chartByCD[k].cv+=r.conv_val;chartByCD[k].reach+=r.reach;});
-  var allVals=[];topAS.forEach(function(as){chartDays.forEach(function(d){allVals.push(getChartVal(as+'||'+d));});});
-  var maxV=Math.max.apply(null,allVals.concat([0.01]));
-  var pad=chartPad,cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
-  for(var gi=0;gi<=4;gi++){var gy=pad.t+cH*(1-gi/4);ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cW,gy);ctx.strokeStyle='#1e2530';ctx.lineWidth=1;ctx.stroke();var lbl=maxV*gi/4;var txt=chartMetric==='spend'||chartMetric==='cpa'?'$'+Math.round(lbl).toLocaleString():chartMetric==='roas'?lbl.toFixed(1)+'x':fk(lbl);ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='right';ctx.fillText(txt,pad.l-5,gy+3);}
-  var step=Math.ceil(chartDays.length/7);ctx.fillStyle='#4a5568';ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
-  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted').trim()||'#4a5568';
-  chartDays.forEach(function(d,i){if(i%step!==0&&i!==chartDays.length-1)return;ctx.fillText(d.slice(5),pad.l+(i/(chartDays.length-1))*cW,H-6);});
-  topAS.forEach(function(as,ci){
-    var pts=chartDays.map(function(d,i){return{x:pad.l+(i/(chartDays.length-1))*cW,y:pad.t+cH*(1-getChartVal(as+'||'+d)/maxV)};});
-    ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});ctx.lineTo(pts[pts.length-1].x,pad.t+cH);ctx.lineTo(pts[0].x,pad.t+cH);ctx.closePath();ctx.fillStyle=ha(COLORS[ci%COLORS.length],0.07);ctx.fill();
-    ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});ctx.strokeStyle=COLORS[ci%COLORS.length];ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.stroke();
+  chartByCD={};filteredData.forEach(function(r){
+    var k=r.adSet+'||'+String(r.day).slice(0,10);
+    if(!chartByCD[k])chartByCD[k]={spend:0,p:0,cv:0,reach:0};
+    chartByCD[k].spend+=r.spend;chartByCD[k].p+=r.purchases;chartByCD[k].cv+=r.conv_val;chartByCD[k].reach+=r.reach;
   });
-  s('lineTitle',chartMetric==='spend'?'Daily Spend by Ad Set':chartMetric==='roas'?'Daily ROAS by Ad Set':chartMetric==='cpa'?'Daily CPA by Ad Set':'Daily Reach by Ad Set');
+
+  var metrics=Object.keys(activeMetrics).filter(function(m){return activeMetrics[m];});
+  var mutedC=getComputedStyle(document.body).getPropertyValue('--muted').trim()||'#4a5568';
+  var borderC=getComputedStyle(document.body).getPropertyValue('--border').trim()||'#1e2530';
+  var pad=chartPad,cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+
+  // Each metric gets its own Y scale — draw one line per adSet per metric
+  // Use COLORS cycling: first 6 for first metric, next 6 for second, etc.
+  metrics.forEach(function(metric, mi){
+    var mColors=COLORS.slice(mi*6, mi*6+6);
+    if(!mColors.length) mColors=COLORS;
+    var allVals=[];
+    topAS.forEach(function(as){chartDays.forEach(function(d){allVals.push(getMetricVal(chartByCD[as+'||'+d],metric));});});
+    var maxV=Math.max.apply(null,allVals.concat([0.01]));
+
+    // Draw Y axis labels for this metric (only for first metric to avoid clutter)
+    if(mi===0){
+      for(var gi=0;gi<=4;gi++){
+        var gy=pad.t+cH*(1-gi/4);
+        ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cW,gy);
+        ctx.strokeStyle=borderC;ctx.lineWidth=1;ctx.stroke();
+        var lbl=maxV*gi/4;
+        var txt=fmtMetric(lbl,metric).replace('$','$').slice(0,8);
+        ctx.fillStyle=mutedC;ctx.font='9px IBM Plex Mono';ctx.textAlign='right';
+        ctx.fillText(txt,pad.l-5,gy+3);
+      }
+    }
+
+    topAS.forEach(function(as,ci){
+      var color=mColors[ci%mColors.length]||COLORS[ci%COLORS.length];
+      var pts=chartDays.map(function(d,i){
+        var v=getMetricVal(chartByCD[as+'||'+d],metric);
+        return{x:pad.l+(i/(chartDays.length-1))*cW, y:pad.t+cH*(1-v/maxV)};
+      });
+      if(metrics.length===1){
+        ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+        ctx.lineTo(pts[pts.length-1].x,pad.t+cH);ctx.lineTo(pts[0].x,pad.t+cH);ctx.closePath();
+        ctx.fillStyle=ha(color,0.07);ctx.fill();
+      }
+      ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+      // Dashed line for secondary metrics
+      ctx.setLineDash(mi>0?[4,3]:[]);
+      ctx.strokeStyle=color;ctx.lineWidth=mi===0?1.8:1.4;ctx.lineJoin='round';ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  });
+
+  // X axis labels
+  var step=Math.ceil(chartDays.length/7);
+  ctx.fillStyle=mutedC;ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
+  chartDays.forEach(function(d,i){if(i%step!==0&&i!==chartDays.length-1)return;ctx.fillText(d.slice(5),pad.l+(i/(chartDays.length-1))*cW,H-6);});
+
+  var metricNames={spend:'Spend',roas:'ROAS',cpa:'CPA',aov:'AOV',reach:'Reach'};
+  s('lineTitle','Daily '+metrics.map(function(m){return metricNames[m];}).join(' + ')+' by Ad Set');
 }
 function ha(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return'rgba('+r+','+g+','+b+','+a+')';}
 
