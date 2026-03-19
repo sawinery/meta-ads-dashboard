@@ -131,11 +131,12 @@ td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;vertica
 tr:last-child td{border-bottom:none;}
 tr.adset-row:hover td{background:rgba(255,255,255,0.02);cursor:pointer;}
 /* Sticky first two columns */
-th:nth-child(1),td:nth-child(1){position:sticky;left:0;z-index:3;background:var(--surface2);}
-th:nth-child(2),td:nth-child(2){position:sticky;left:220px;z-index:3;background:var(--surface2);}
-td:nth-child(1){background:var(--surface);z-index:2;}
-td:nth-child(2){background:var(--surface);z-index:2;}
-tr.adset-row:hover td:nth-child(1),tr.adset-row:hover td:nth-child(2){background:rgba(255,255,255,0.035);}
+th:nth-child(1),td:nth-child(1){position:sticky;left:0;z-index:3;}
+th:nth-child(2),td:nth-child(2){position:sticky;left:220px;z-index:3;}
+th:nth-child(1),th:nth-child(2){background:var(--surface2);}
+td:nth-child(1),td:nth-child(2){background:var(--surface);}
+tr.adset-row:hover td:nth-child(1),tr.adset-row:hover td:nth-child(2){background:#16191f;}
+body.light tr.adset-row:hover td:nth-child(1),body.light tr.adset-row:hover td:nth-child(2){background:#e8eaed;}
 th:nth-child(1)::after,th:nth-child(2)::after,td:nth-child(1)::after,td:nth-child(2)::after{content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;background:var(--border);}
 .spend-bar{display:flex;align-items:center;gap:8px;}
 .bar-bg{width:80px;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;flex-shrink:0;}
@@ -880,25 +881,22 @@ function renderCampBar(camps){
       updateAll();
     };
     wrap.appendChild(btn);
-    if(isAdmin){
-      var hbtn=document.createElement('button');
-      hbtn.title=hidden?'Show campaign':'Hide campaign';
-      hbtn.style.cssText='padding:2px 5px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted2);font-size:10px;cursor:pointer;flex-shrink:0;';
-      hbtn.textContent=hidden?'👁':'✕';
-      hbtn.onclick=function(e){
-        e.stopPropagation();
-        hiddenCampaigns[c]=!hidden;
-        try{localStorage.setItem('dash_hidden_camps',JSON.stringify(hiddenCampaigns));}catch(e2){}
-        // If we just hid the active campaign, switch to first visible
-        if(!hidden&&activeCamp===c){
-          var visible=camps.filter(function(x){return !hiddenCampaigns[x];});
-          if(visible.length) activeCamp=visible[0];
-        }
-        renderCampBar(camps);
-        updateAll();
-      };
-      wrap.appendChild(hbtn);
-    }
+    var hbtn=document.createElement('button');
+    hbtn.title=hidden?'Show campaign':'Hide campaign';
+    hbtn.style.cssText='padding:2px 5px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted2);font-size:10px;cursor:pointer;flex-shrink:0;line-height:1;';
+    hbtn.textContent=hidden?'👁':'✕';
+    hbtn.onclick=function(e){
+      e.stopPropagation();
+      hiddenCampaigns[c]=!hidden;
+      try{localStorage.setItem('dash_hidden_camps',JSON.stringify(hiddenCampaigns));}catch(e2){}
+      if(!hidden&&activeCamp===c){
+        var visible=camps.filter(function(x){return !hiddenCampaigns[x];});
+        if(visible.length) activeCamp=visible[0];
+      }
+      renderCampBar(camps);
+      updateAll();
+    };
+    wrap.appendChild(hbtn);
     bar.appendChild(wrap);
   });
 }
@@ -1462,14 +1460,14 @@ async function saveEditableField(el){
   if(!isAdmin) return;
   var adSet=el.getAttribute('data-adset');
   var field=el.getAttribute('data-field');
-  // Get raw text (markdown) from contenteditable
+  // Get raw markdown text
   var val=el.innerText.trim();
   // Update local cache
   if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',videos:{}};
   customData[adSet][field]=val;
-  // Update DOM — keep showing raw markdown in admin mode for easy re-editing
-  if(val){el.classList.remove('empty');el.textContent=val;}
-  else{el.classList.add('empty');el.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:11px;">'+el.getAttribute('data-placeholder')+'</span>';}
+  // Update DOM appearance — show raw markdown so admin can re-edit easily
+  el.classList.toggle('empty', !val);
+  if(!val) el.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:11px;">'+el.getAttribute('data-placeholder')+'</span>';
   // Save to Supabase
   try{
     var fields={};
@@ -1481,8 +1479,11 @@ async function saveEditableField(el){
     if(field==='whatTesting') fields.what_testing=val;
     if(field==='whyTesting') fields.why_testing=val;
     await upsertCustom(adSet, null, fields);
-    showToast('Saved','success');
-  }catch(e){showToast('Save failed','error');}
+    showToast('Saved ✓','success');
+  }catch(e){
+    console.error('Save failed:',e);
+    showToast('Save failed: '+e.message,'error');
+  }
 }
 
 // ── VIDEO ──
@@ -1634,14 +1635,14 @@ async function saveDrawerCustom(explicit){
   if(!isAdmin) return;
   var angle=document.getElementById('dcAngle')?document.getElementById('dcAngle').value.trim():'';
   var awareness=document.getElementById('dcAwareness')?document.getElementById('dcAwareness').value.trim():'';
-  var learning=document.getElementById('dcLearning')?document.getElementById('dcLearning').value.trim():'';
+  var dcLearnEl=document.getElementById('dcLearning');var learning=dcLearnEl?(dcLearnEl.tagName==='TEXTAREA'?dcLearnEl.value:dcLearnEl.innerText||'').trim():'';
   var adType=document.getElementById('dcType')?document.getElementById('dcType').value.trim():'';
   if(!customData[drawerAdSet]) customData[drawerAdSet]={angle:'',awareness:'',learning:'',adType:'',videos:{}};
   var result=document.getElementById('dcResult')?document.getElementById('dcResult').value.trim():'';
   var coreAvatar=document.getElementById('dcCoreAvatar')?document.getElementById('dcCoreAvatar').value.trim():'';
   var subAvatar=document.getElementById('dcSubAvatar')?document.getElementById('dcSubAvatar').value.trim():'';
-  var whatTesting=document.getElementById('dcWhatTesting')?document.getElementById('dcWhatTesting').value.trim():'';
-  var whyTesting=document.getElementById('dcWhyTesting')?document.getElementById('dcWhyTesting').value.trim():'';
+  var dcWhatEl=document.getElementById('dcWhatTesting');var whatTesting=dcWhatEl?(dcWhatEl.tagName==='TEXTAREA'?dcWhatEl.value:dcWhatEl.innerText||'').trim():'';
+  var dcWhyEl=document.getElementById('dcWhyTesting');var whyTesting=dcWhyEl?(dcWhyEl.tagName==='TEXTAREA'?dcWhyEl.value:dcWhyEl.innerText||'').trim():'';
   var briefUrl=document.getElementById('dcBriefUrl')?document.getElementById('dcBriefUrl').value.trim():'';
   customData[drawerAdSet].angle=angle;
   customData[drawerAdSet].awareness=awareness;
