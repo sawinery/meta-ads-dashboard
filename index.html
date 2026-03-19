@@ -1372,8 +1372,7 @@ function mdToHtml(text){
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
     .replace(/^## (.+)$/gm,'<h3>$1</h3>');
   // Lists
-  var lines=html.split('
-');
+  var lines=html.split('\n');
   var out=[],inUl=false,inOl=false;
   lines.forEach(function(line){
     var ul=line.match(/^[-*] (.+)/);
@@ -1409,8 +1408,7 @@ function richLine(textareaId, prefix){
   var ta=document.getElementById(textareaId);
   if(!ta) return;
   var start=ta.selectionStart;
-  var lineStart=ta.value.lastIndexOf('
-',start-1)+1;
+  var lineStart=ta.value.lastIndexOf('\n',start-1)+1;
   var line=ta.value.substring(lineStart,ta.selectionEnd);
   // Toggle: if line already starts with prefix, remove it
   if(line.startsWith(prefix)){
@@ -1423,16 +1421,17 @@ function richLine(textareaId, prefix){
 }
 
 function richToolbar(taId){
+  var t=taId;
   return '<div class="rich-toolbar">'
-    +'<button class="rich-btn" title="Bold" onclick="richInsert(''+taId+'','**','**')"><b>B</b></button>'
-    +'<button class="rich-btn" title="Italic" onclick="richInsert(''+taId+'','*','*')"><i>I</i></button>'
-    +'<button class="rich-btn" title="Code" onclick="richInsert(''+taId+'','`','`')">` `</button>'
+    +'<button class="rich-btn" title="Bold" onclick="richInsert(\''+t+'\',\'**\',\'**\')"><b>B</b></button>'
+    +'<button class="rich-btn" title="Italic" onclick="richInsert(\''+t+'\',\'*\',\'*\')"><i>I</i></button>'
+    +'<button class="rich-btn" title="Code" onclick="richInsert(\''+t+'\',\'\`\',\'\`\')">` `</button>'
     +'<div class="rich-btn-sep"></div>'
-    +'<button class="rich-btn" title="Bullet list" onclick="richLine(''+taId+'','- ')">• List</button>'
-    +'<button class="rich-btn" title="Numbered list" onclick="richLine(''+taId+'','1. ')">1. List</button>'
-    +'<button class="rich-btn" title="Heading" onclick="richLine(''+taId+'','### ')">H</button>'
+    +'<button class="rich-btn" title="Bullet" onclick="richLine(\''+t+'\',\'- \')">• List</button>'
+    +'<button class="rich-btn" title="Numbered" onclick="richLine(\''+t+'\',\'1. \')">1. List</button>'
+    +'<button class="rich-btn" title="Heading" onclick="richLine(\''+t+'\',\'### \')">H</button>'
     +'<div class="rich-btn-sep"></div>'
-    +'<button class="rich-btn" title="New line" onclick="var ta=document.getElementById(''+taId+'');var s=ta.selectionStart;ta.value=ta.value.slice(0,s)+'\n'+ta.value.slice(s);ta.selectionStart=ta.selectionEnd=s+1;ta.focus();">↵</button>'
+    +'<button class="rich-btn" title="New line" onclick="var ta=document.getElementById(\''+t+'\');var s=ta.selectionStart;ta.value=ta.value.slice(0,s)+\'\\n\'+ta.value.slice(s);ta.selectionStart=ta.selectionEnd=s+1;ta.focus();">↵</button>'
     +'</div>';
 }
 
