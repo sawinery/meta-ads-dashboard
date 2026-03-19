@@ -84,7 +84,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .search-input:focus{border-color:var(--accent);}
 
 /* KPIs */
-.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px 18px;position:relative;overflow:hidden;}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .kpi.green::before{background:var(--accent);}
@@ -92,6 +92,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .kpi.yellow::before{background:var(--warn);}
 .kpi.blue::before{background:var(--accent2);}
 .kpi.purple::before{background:var(--purple);}
+.kpi[style*="--kpi-color"]::before{background:var(--kpi-color);}
 .kpi-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
 .kpi-val{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--text);line-height:1;margin-bottom:5px;}
 .kpi-sub{font-family:var(--mono);font-size:10px;color:var(--muted);}
@@ -393,6 +394,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     <div class="kpi red"><div class="kpi-label">CPA<i class="tip" data-tip="Cost Per Acquisition. Total spend ÷ purchases. Lower is better.">?</i></div><div class="kpi-val" id="kpiCpa">-</div><div class="kpi-sub" id="kpiCpaSub">-</div></div>
     <div class="kpi blue"><div class="kpi-label">Purchase Value<i class="tip" data-tip="Total purchase conversion value — revenue attributed to your ads.">?</i></div><div class="kpi-val" id="kpiVal">-</div><div class="kpi-sub" id="kpiValSub">-</div></div>
     <div class="kpi purple"><div class="kpi-label">Purchases<i class="tip" data-tip="Total number of purchase conversions attributed to your ads.">?</i></div><div class="kpi-val" id="kpiP">-</div><div class="kpi-sub" id="kpiPSub">-</div></div>
+    <div class="kpi" style="--kpi-color:var(--pink);"><div class="kpi-label" style="display:flex;align-items:center;gap:5px;">AOV<i class="tip" data-tip="Average Order Value. Total purchase value ÷ purchases. Revenue per order.">?</i></div><div class="kpi-val" id="kpiAov">-</div><div class="kpi-sub" id="kpiAovSub">-</div></div>
   </div>
 
   <!-- Charts -->
@@ -973,6 +975,8 @@ function updateKPIs(){
   s('kpiCpa',cpa>0?'$'+cpa.toFixed(2):'-');s('kpiCpaSub',Math.round(p)+' purchases');
   s('kpiVal','$'+Math.round(cv).toLocaleString());s('kpiValSub','total revenue from ads');
   s('kpiP',Math.round(p).toLocaleString());s('kpiPSub',cpa>0?'$'+cpa.toFixed(2)+' each':'-');
+  var aov=p>0?cv/p:0;
+  s('kpiAov',aov>0?'$'+aov.toFixed(2):'-');s('kpiAovSub',p>0?Math.round(p)+' orders':'-');
 }
 
 function toggleMetric(m,btn){
