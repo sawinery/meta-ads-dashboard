@@ -275,12 +275,14 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);}.charts-row{grid-template-columns:1fr;}.drawer{width:100%;}}
 
 /* ── EDITABLE FIELDS IMPROVED ── */
-.editable-val{min-height:24px;cursor:text;border-radius:4px;padding:5px 7px;transition:background 0.15s;font-size:12px;line-height:1.5;word-break:break-word;}
+.editable-val{min-height:24px;border-radius:4px;padding:5px 7px;font-size:12px;line-height:1.5;word-break:break-word;cursor:default;}
 .editable-val:not(.empty){color:var(--text);}
 .editable-val.empty{color:var(--muted);font-style:italic;font-size:11px;}
-.admin-mode .editable-val{border:1px solid var(--border2);background:rgba(255,255,255,0.02);}
-.admin-mode .editable-val:hover{background:var(--surface2);border-color:var(--muted);}
-.admin-mode .editable-val:focus{background:var(--surface2);border-color:var(--accent);outline:none;}
+.admin-mode .editable-val{border:1px solid var(--border2);background:rgba(255,255,255,0.02);cursor:pointer;}
+.admin-mode .editable-val:hover{background:var(--surface2);border-color:var(--accent);}
+.inline-edit-wrap{position:relative;}
+.inline-textarea{width:100%;min-width:200px;padding:5px 7px;background:var(--surface2);border:1px solid var(--accent);color:var(--text);border-radius:4px;font-family:var(--sans);font-size:12px;line-height:1.5;outline:none;resize:both;min-height:60px;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+.inline-save-btn{position:absolute;bottom:-28px;right:0;padding:3px 10px;background:var(--accent);color:#000;border:none;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:600;cursor:pointer;z-index:100;}
 
 /* ── TYPE DROPDOWN ── */
 .type-select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:4px;padding:4px 8px;font-family:var(--mono);font-size:11px;cursor:pointer;outline:none;width:100%;}
@@ -881,22 +883,24 @@ function renderCampBar(camps){
       updateAll();
     };
     wrap.appendChild(btn);
-    var hbtn=document.createElement('button');
-    hbtn.title=hidden?'Show campaign':'Hide campaign';
-    hbtn.style.cssText='padding:2px 5px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted2);font-size:10px;cursor:pointer;flex-shrink:0;line-height:1;';
-    hbtn.textContent=hidden?'👁':'✕';
-    hbtn.onclick=function(e){
-      e.stopPropagation();
-      hiddenCampaigns[c]=!hidden;
-      try{localStorage.setItem('dash_hidden_camps',JSON.stringify(hiddenCampaigns));}catch(e2){}
-      if(!hidden&&activeCamp===c){
-        var visible=camps.filter(function(x){return !hiddenCampaigns[x];});
-        if(visible.length) activeCamp=visible[0];
-      }
-      renderCampBar(camps);
-      updateAll();
-    };
-    wrap.appendChild(hbtn);
+    if(isAdmin){
+      var hbtn=document.createElement('button');
+      hbtn.title=hidden?'Show campaign':'Hide campaign';
+      hbtn.style.cssText='padding:2px 5px;background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted2);font-size:10px;cursor:pointer;flex-shrink:0;line-height:1;';
+      hbtn.textContent=hidden?'👁':'✕';
+      hbtn.onclick=function(e){
+        e.stopPropagation();
+        hiddenCampaigns[c]=!hidden;
+        try{localStorage.setItem('dash_hidden_camps',JSON.stringify(hiddenCampaigns));}catch(e2){}
+        if(!hidden&&activeCamp===c){
+          var visible=camps.filter(function(x){return !hiddenCampaigns[x];});
+          if(visible.length) activeCamp=visible[0];
+        }
+        renderCampBar(camps);
+        updateAll();
+      };
+      wrap.appendChild(hbtn);
+    }
     bar.appendChild(wrap);
   });
 }
@@ -1445,30 +1449,55 @@ function richEditorField(id, val, placeholder, readonly, rows){
     +'</div>';
 }
 
+var pendingEdits={};
+
 function editableDiv(adSet, field, val, placeholder){
   var hasVal=val&&val.trim();
-  return '<div class="editable-val'+(hasVal?'':' empty')+'" data-adset="'+esc(adSet)+'" data-field="'+field+'"'
-    +(isAdmin?' contenteditable="true"':' contenteditable="false"')
-    +' data-placeholder="'+placeholder+'"'
-    +' onblur="saveEditableField(this)"'
-    +' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();this.blur();}">'
-    +(hasVal?esc(val):'<span style=\'color:var(--muted);font-style:italic;font-size:11px;\'>'+placeholder+'</span>')
-    +'</div>';
+  if(!isAdmin){
+    if(!hasVal) return '<span style="color:var(--muted);font-style:italic;font-size:11px;">'+placeholder+'</span>';
+    return '<div class="md-render">'+mdToHtml(val)+'</div>';
+  }
+  var display=hasVal?'<div class="md-render" style="pointer-events:none;">'+mdToHtml(val)+'</div>'
+    :'<span style="color:var(--muted);font-style:italic;font-size:11px;">'+placeholder+'</span>';
+  return '<div class="editable-val'+(hasVal?'':' empty')+' inline-edit-wrap"'
+    +' data-adset="'+esc(adSet)+'" data-field="'+field+'"'
+    +' data-val="'+esc(val||'')+'"'
+    +' data-placeholder="'+esc(placeholder)+'"'
+    +' onclick="openInlineEdit(this)">'
+    +display+'</div>';
 }
 
-async function saveEditableField(el){
+function openInlineEdit(el){
   if(!isAdmin) return;
+  document.querySelectorAll('.inline-textarea').forEach(function(ta){commitInlineEdit(ta);});
   var adSet=el.getAttribute('data-adset');
   var field=el.getAttribute('data-field');
-  // Get raw markdown text
-  var val=el.innerText.trim();
-  // Update local cache
-  if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',videos:{}};
+  var val=el.getAttribute('data-val')||'';
+  var placeholder=el.getAttribute('data-placeholder')||'';
+  el.innerHTML='<textarea class="inline-textarea" data-adset="'+esc(adSet)+'" data-field="'+field+'">'+esc(val)+'</textarea>'
+    +'<button class="inline-save-btn" onclick="event.stopPropagation();commitInlineEdit(this.previousSibling)">Save</button>';
+  var ta=el.querySelector('textarea');
+  ta.focus();
+  ta.setSelectionRange(ta.value.length,ta.value.length);
+  ta.addEventListener('blur',function(){setTimeout(function(){commitInlineEdit(ta);},200);});
+  el.onclick=null;
+}
+
+async function commitInlineEdit(ta){
+  if(!ta||!ta.classList.contains('inline-textarea')) return;
+  var adSet=ta.getAttribute('data-adset');
+  var field=ta.getAttribute('data-field');
+  var val=ta.value;
+  var el=ta.closest('.inline-edit-wrap');
+  if(!el) return;
+  if(!customData[adSet]) customData[adSet]={};
   customData[adSet][field]=val;
-  // Update DOM appearance — show raw markdown so admin can re-edit easily
-  el.classList.toggle('empty', !val);
-  if(!val) el.innerHTML='<span style="color:var(--muted);font-style:italic;font-size:11px;">'+el.getAttribute('data-placeholder')+'</span>';
-  // Save to Supabase
+  el.setAttribute('data-val', val);
+  el.classList.toggle('empty', !val.trim());
+  el.innerHTML=val.trim()
+    ?'<div class="md-render" style="pointer-events:none;">'+mdToHtml(val)+'</div>'
+    :'<span style="color:var(--muted);font-style:italic;font-size:11px;">'+el.getAttribute('data-placeholder')+'</span>';
+  el.onclick=function(){openInlineEdit(el);};
   try{
     var fields={};
     if(field==='angle') fields.angle=val;
@@ -1480,11 +1509,11 @@ async function saveEditableField(el){
     if(field==='whyTesting') fields.why_testing=val;
     await upsertCustom(adSet, null, fields);
     showToast('Saved ✓','success');
-  }catch(e){
-    console.error('Save failed:',e);
-    showToast('Save failed: '+e.message,'error');
-  }
+  }catch(e){showToast('Save failed: '+e.message,'error');}
 }
+
+async function saveEditableField(el){}
+
 
 // ── VIDEO ──
 function openMediaPlayer(url, type, label){
