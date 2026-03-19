@@ -538,6 +538,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('videoModal')">Close</button>
+      <button class="btn danger" id="videoDeleteBtn" onclick="deleteVideoUrl()" style="display:none;">🗑 Remove</button>
       <button class="btn primary" id="videoSaveBtn" onclick="saveVideoUrl()" style="display:none;">Save Link</button>
     </div>
   </div>
@@ -1398,7 +1399,11 @@ function renderTable(){
   adSets.forEach(function(a){
     var cd=customData[a.adSet]||{};
     var topAd=getTopAd(a.adSet);
-    var mediaUrl=cd.videos&&topAd&&cd.videos[topAd]?cd.videos[topAd]:(cd.video_url||'');
+    // Try: video for top ad → any video in the ad set → ad set level video
+    var mediaUrl='';
+    if(cd.videos&&topAd&&cd.videos[topAd]) mediaUrl=cd.videos[topAd];
+    else if(cd.videos){var vk=Object.keys(cd.videos).find(function(k){return cd.videos[k];});if(vk)mediaUrl=cd.videos[vk];}
+    if(!mediaUrl&&cd.video_url) mediaUrl=cd.video_url;
     var barW=(a.spend/maxSpend*100).toFixed(1);
     var tr=document.createElement('tr');tr.className='adset-row';
 
@@ -1622,6 +1627,7 @@ function openVideoEdit(adSet, adName, currentUrl){
   document.getElementById('videoEditLabel').textContent='Paste a Dropbox link (video .mp4 or image .jpg/.png):';
   document.getElementById('videoUrlInput').value=currentUrl||'';
   document.getElementById('videoSaveBtn').style.display='block';
+  document.getElementById('videoDeleteBtn').style.display=currentUrl?'block':'none';
   // Show preview if existing
   if(currentUrl){
     var direct=toDirectDropboxUrl(currentUrl);
@@ -1653,6 +1659,24 @@ async function saveVideoUrl(){
     if(drawerAdSet===adSet) renderDrawer();
     showToast('Video link saved','success');
   }catch(e){showToast('Save failed: '+e.message,'error');}
+}
+
+async function deleteVideoUrl(){
+  var adSet=videoTarget.adSet, adName=videoTarget.ad;
+  if(!adSet) return;
+  if(!customData[adSet]) customData[adSet]={angle:'',awareness:'',learning:'',videos:{}};
+  if(adName){
+    customData[adSet].videos[adName]='';
+  } else {
+    customData[adSet].video_url='';
+  }
+  try{
+    await upsertCustom(adSet, adName||null, {video_url:''});
+    closeModal('videoModal');
+    renderTable();
+    if(drawerAdSet===adSet) renderDrawer();
+    showToast('Media removed','success');
+  }catch(e){showToast('Remove failed: '+e.message,'error');}
 }
 
 function toDirectDropboxUrl(url){
@@ -1787,7 +1811,7 @@ function renderVariations(rows,totalSpend){
     return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
   }).sort(function(a,b){return b.spend-a.spend;});
 
-  var ranked=ads.slice().sort(function(a,b){return b.roas-a.roas;});
+  var ranked=ads.slice().sort(function(a,b){return b.spend-a.spend;});
   var rankMap={};ranked.forEach(function(a,i){rankMap[a.ad]=i+1;});
   var cd=customData[drawerAdSet]||{};
 
@@ -1797,7 +1821,7 @@ function renderVariations(rows,totalSpend){
   ads.forEach(function(a){
     var rank=rankMap[a.ad];
     var rankClass=rank===1?'rank-1':rank===2?'rank-2':'rank-3';
-    var rankLabel=rank===1?'#1 ROAS':rank===2?'#2 ROAS':'#'+rank;
+    var rankLabel=rank===1?'#1 SPEND':rank===2?'#2 SPEND':'#'+rank+' SPEND';
     var videoUrl=cd.videos&&cd.videos[a.ad]?cd.videos[a.ad]:'';
     var directUrl=toDirectDropboxUrl(videoUrl);
 
