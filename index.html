@@ -309,6 +309,53 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 .toast.success{border-color:var(--accent);color:var(--accent);}
 .toast.error{border-color:var(--red);color:var(--red);}
 
+/* ── NAV TABS ── */
+.nav-tabs{display:flex;gap:0;padding:0 28px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:57px;z-index:90;}
+.nav-tab{padding:11px 22px;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;letter-spacing:0.04em;white-space:nowrap;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+body.light .nav-tabs{background:#fff;box-shadow:0 1px 0 var(--border);}
+
+/* ── HIT RATE ── */
+#hitRateView{display:none;animation:fadeIn 0.3s ease;}
+.hit-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.hit-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 22px;position:relative;overflow:hidden;text-align:center;}
+body.light .hit-card{box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+.hit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.hit-card.total::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.hit-card.winner::before{background:var(--accent);}
+.hit-card.super::before{background:var(--accent2);}
+.hit-card.breakthrough::before{background:var(--warn);}
+.hit-card-icon{font-size:28px;margin-bottom:8px;line-height:1;}
+.hit-card-label{font-family:var(--mono);font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.hit-card-val{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;margin-bottom:6px;}
+.hit-card-sub{font-family:var(--mono);font-size:11px;color:var(--muted2);}
+.hit-card.total .hit-card-val{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hit-card.winner .hit-card-val{color:var(--accent);}
+.hit-card.super .hit-card-val{color:var(--accent2);}
+.hit-card.breakthrough .hit-card-val{color:var(--warn);}
+.hit-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+body.light .hit-section{box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.hit-section-header{display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.hit-section-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.hit-section-title{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
+.hit-section-count{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-left:auto;}
+.hit-row{display:flex;align-items:flex-start;gap:16px;padding:13px 20px;border-bottom:1px solid var(--border);transition:background 0.12s;}
+.hit-row:last-child{border-bottom:none;}
+.hit-row:hover{background:var(--surface2);}
+.hit-row-name{flex:1;font-size:13px;font-weight:500;color:var(--text);min-width:0;}
+.hit-row-camp{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px;}
+.hit-row-learning{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.5;}
+.hit-row-stats{text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:2px;}
+.hit-row-stat{font-family:var(--mono);font-size:11px;color:var(--muted2);}
+.hit-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.hit-filter-chip{padding:5px 14px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);border-radius:4px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.15s;}
+body.light .hit-filter-chip{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+.hit-filter-chip:hover{border-color:var(--muted2);color:var(--text);}
+.hit-filter-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.08);}
+.hit-empty{text-align:center;padding:48px 20px;color:var(--muted2);font-family:var(--mono);font-size:12px;}
+@media(max-width:800px){.hit-summary{grid-template-columns:repeat(2,1fr);}}
+
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr);}.charts-row{grid-template-columns:1fr;}.drawer{width:100%;}}
 
 /* ── EDITABLE FIELDS IMPROVED ── */
