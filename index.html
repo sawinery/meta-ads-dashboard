@@ -485,6 +485,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>FIRST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the first 7 days since launch.">?</i></th>
           <th>FIRST 7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
+          <th>LAST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the last 7 days this ad set had spend. Shows recent momentum.">?</i></th>
           <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
           <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
@@ -1353,6 +1354,34 @@ function campPerf7Html(adSet){
     +'</div>';
 }
 
+function last7RampHtml(adSet){
+  // Get all days this adSet had spend (from allData, not filtered)
+  var allRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp;});
+  if(!allRows.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var daySpend={};
+  allRows.forEach(function(r){if(r.spend>0){var d=String(r.day).slice(0,10);daySpend[d]=(daySpend[d]||0)+r.spend;}});
+  var spendDays=Object.keys(daySpend).sort();
+  if(!spendDays.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var last7=spendDays.slice(-7); // last 7 days with spend
+  var campDaySpend={};
+  allData.filter(function(r){return r.campaign===activeCamp;}).forEach(function(r){
+    var d=String(r.day).slice(0,10);campDaySpend[d]=(campDaySpend[d]||0)+r.spend;
+  });
+  var ramp=last7.map(function(d){
+    var cs=campDaySpend[d]||0,as=daySpend[d]||0;
+    return cs>0?as/cs*100:0;
+  });
+  var maxPct=Math.max.apply(null,ramp.concat([1]));
+  var avg=(ramp.reduce(function(a,b){return a+b;},0)/ramp.length).toFixed(1);
+  var bars=ramp.map(function(v,i){
+    var h=Math.max(3,Math.round(v/maxPct*26));
+    var color=v>=50?'var(--accent2)':v>20?'var(--accent)':v>10?'var(--warn)':'var(--muted2)';
+    var label=last7[i].slice(5); // MM-DD
+    return '<div class="ramp-bar-wrap" style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">'      +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.15);">'+label+': '+v.toFixed(1)+'%</div>'      +'<div class="ramp-bar" style="height:'+h+'px;background:'+color+';" onmouseenter="this.previousSibling.style.opacity=1" onmouseleave="this.previousSibling.style.opacity=0"></div>'      +'</div>';
+  }).join('');
+  return '<div class="ramp-cell"><div class="ramp-bars" style="align-items:flex-end;">'+bars+'</div><span class="ramp-pct">avg '+avg+'%/day</span></div>';
+}
+
 function spendRampHtml(adSet){
   var ramp=getSpendRamp(adSet);
   if(!ramp.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
@@ -1360,7 +1389,7 @@ function spendRampHtml(adSet){
   var avg=(ramp.reduce(function(a,b){return a+b;},0)/ramp.length).toFixed(1);
   var bars=ramp.map(function(v,i){
     var h=Math.max(3,Math.round(v/maxPct*26));
-    var color=v>20?'var(--accent)':v>10?'var(--warn)':'var(--muted2)';
+    var color=v>=50?'var(--accent2)':v>20?'var(--accent)':v>10?'var(--warn)':'var(--muted2)';
     // Use a wrapper with CSS tooltip via data-tip
     return '<div class="ramp-bar-wrap" style="position:relative;display:inline-flex;flex-direction:column;align-items:center;">'
       +'<div class="ramp-bar-tip" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.15);">D'+(i+1)+': '+v.toFixed(1)+'%</div>'
@@ -1488,6 +1517,7 @@ function renderTable(){
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
       +'<td onclick="event.stopPropagation();">'+campPerf7Html(a.adSet)+'</td>'
+      +'<td onclick="event.stopPropagation();">'+last7RampHtml(a.adSet)+'</td>'
       +resultDropdownCell(a.adSet, cd.result||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:300px;max-width:440px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
       +briefCell(a.adSet, cd.briefUrl||'')
