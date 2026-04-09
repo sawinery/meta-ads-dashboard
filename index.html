@@ -519,6 +519,49 @@ body.light .media-thumb-fallback{background:linear-gradient(135deg,#1a3a5c 0%,#0
 </div>
 </div>
 
+<!-- Hit Rate View -->
+<div id="hitRateView">
+<div class="main">
+  <div class="hit-summary">
+    <div class="hit-card total">
+      <div class="hit-card-icon">🎯</div>
+      <div class="hit-card-label">Overall Hit Rate</div>
+      <div class="hit-card-val" id="hrTotalRate">—</div>
+      <div class="hit-card-sub" id="hrTotalSub">—</div>
+    </div>
+    <div class="hit-card winner">
+      <div class="hit-card-icon">✅</div>
+      <div class="hit-card-label">Winners <span style="font-size:9px;opacity:0.7;">≥20% budget</span></div>
+      <div class="hit-card-val" id="hrWinnerCount">—</div>
+      <div class="hit-card-sub" id="hrWinnerRate">—</div>
+    </div>
+    <div class="hit-card super">
+      <div class="hit-card-icon">🚀</div>
+      <div class="hit-card-label">Super Winners <span style="font-size:9px;opacity:0.7;">≥35%</span></div>
+      <div class="hit-card-val" id="hrSuperCount">—</div>
+      <div class="hit-card-sub" id="hrSuperRate">—</div>
+    </div>
+    <div class="hit-card breakthrough">
+      <div class="hit-card-icon">⚡</div>
+      <div class="hit-card-label">Breakthroughs <span style="font-size:9px;opacity:0.7;">≥50%</span></div>
+      <div class="hit-card-val" id="hrBreakCount">—</div>
+      <div class="hit-card-sub" id="hrBreakRate">—</div>
+    </div>
+  </div>
+
+  <div class="hit-filter-bar">
+    <span style="font-family:var(--mono);font-size:11px;color:var(--muted2);">FILTER:</span>
+    <div class="hit-filter-chip active" data-camp="all" onclick="setHitCampFilter('all',this)">All Campaigns</div>
+    <div id="hrCampFilters" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+  </div>
+
+  <div id="hrBreakthroughSection"></div>
+  <div id="hrSuperSection"></div>
+  <div id="hrWinnerSection"></div>
+  <div id="hrLoserSection"></div>
+</div>
+</div>
+
 <!-- Drawer -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
@@ -2117,6 +2160,119 @@ function esc(s){
 }
 
 window.addEventListener('resize',function(){drawLineChart();});
+
+// ── NAV TABS ──
+var activeTab='dashboard';
+var hitCampFilter='all';
+
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById('dashboard').style.display=tab==='dashboard'?'block':'none';
+  document.getElementById('hitRateView').style.display=tab==='hitRate'?'block':'none';
+  document.getElementById('navDashboard').classList.toggle('active',tab==='dashboard');
+  document.getElementById('navHitRate').classList.toggle('active',tab==='hitRate');
+  if(tab==='hitRate') renderHitRate();
+}
+
+// ── HIT RATE ──
+function setHitCampFilter(camp, el){
+  hitCampFilter=camp;
+  document.querySelectorAll('.hit-filter-chip').forEach(function(c){c.classList.remove('active');});
+  el.classList.add('active');
+  renderHitRate();
+}
+
+function getAdSetResult(adSet){
+  var cd=customData[adSet]||{};
+  return cd.result||'';
+}
+
+function getAdSetSpendPct(adSet, camp){
+  // Get this adSet's spend as % of campaign total (all time)
+  var campTotal=allData.filter(function(r){return r.campaign===camp;}).reduce(function(s,r){return s+r.spend;},0);
+  var asTotal=allData.filter(function(r){return r.adSet===adSet&&r.campaign===camp;}).reduce(function(s,r){return s+r.spend;},0);
+  return campTotal>0?asTotal/campTotal*100:0;
+}
+
+function classifyAdSet(adSet, camp){
+  var result=getAdSetResult(adSet);
+  var pct=getAdSetSpendPct(adSet, camp);
+  if(result==='Breakthrough'||pct>=50) return 'breakthrough';
+  if(result==='Winner'&&pct>=35) return 'super';
+  if(result==='Winner') return 'winner';
+  if(result==='Loser') return 'loser';
+  return 'none';
+}
+
+function renderHitRate(){
+  // Build campaign filter chips
+  var camps=[...new Set(allData.map(function(r){return r.campaign;}))].sort();
+  var chipContainer=document.getElementById('hrCampFilters');
+  chipContainer.innerHTML='';
+  camps.forEach(function(c){
+    var chip=document.createElement('div');
+    chip.className='hit-filter-chip'+(hitCampFilter===c?' active':'');
+    chip.setAttribute('data-camp',c);
+    chip.textContent=c;
+    chip.onclick=function(){setHitCampFilter(c,chip);};
+    chipContainer.appendChild(chip);
+  });
+
+  // Get all ad sets for the selected campaign(s)
+  var filtCamps=hitCampFilter==='all'?camps:[hitCampFilter];
+  var adSetMap={};
+  allData.forEach(function(r){
+    if(filtCamps.indexOf(r.campaign)===-1) return;
+    var key=r.adSet+'||'+r.campaign;
+    if(!adSetMap[key]) adSetMap[key]={adSet:r.adSet,campaign:r.campaign,spend:0,days:{}};
+    adSetMap[key].spend+=r.spend;
+    adSetMap[key].days[String(r.day).slice(0,10)]=1;
+  });
+
+  var allAdSets=Object.values(adSetMap).filter(function(a){return a.spend>0;});
+  var total=allAdSets.length;
+
+  // Classify each
+  var breakdown={breakthrough:[],super:[],winner:[],loser:[],none:[]};
+  allAdSets.forEach(function(a){
+    var cls=classifyAdSet(a.adSet,a.campaign);
+    breakdown[cls].push(a);
+  });
+
+  var winners=breakdown.breakthrough.length+breakdown.super.length+breakdown.winner.length;
+  var hitRate=total>0?(winners/total*100):0;
+
+  // Update summary cards
+  document.getElementById('hrTotalRate').textContent=hitRate.toFixed(1)+'%';
+  document.getElementById('hrTotalSub').textContent=winners+' winners from '+total+' ad sets';
+  document.getElementById('hrWinnerCount').textContent=breakdown.winner.length;
+  document.getElementById('hrWinnerRate').textContent=total>0?(breakdown.winner.length/total*100).toFixed(1)+'% of total':'—';
+  document.getElementById('hrSuperCount').textContent=breakdown.super.length;
+  document.getElementById('hrSuperRate').textContent=total>0?(breakdown.super.length/total*100).toFixed(1)+'% of total':'—';
+  document.getElementById('hrBreakCount').textContent=breakdown.breakthrough.length;
+  document.getElementById('hrBreakRate').textContent=total>0?(breakdown.breakthrough.length/total*100).toFixed(1)+'% of total':'—';
+
+  // Render sections
+  renderHitSection('hrBreakthroughSection','⚡ Breakthroughs','≥50% of campaign budget','var(--warn)',breakdown.breakthrough,'breakthrough');
+  renderHitSection('hrSuperSection','🚀 Super Winners','≥35% spend share + Winner','var(--accent2)',breakdown.super,'super');
+  renderHitSection('hrWinnerSection','✅ Winners','Marked as Winner','var(--accent)',breakdown.winner,'winner');
+  renderHitSection('hrLoserSection','✕ Losers','Marked as Loser','var(--red)',breakdown.loser,'loser');
+}
+
+function renderHitSection(elId, title, subtitle, color, items, type){
+  var el=document.getElementById(elId);
+  if(!items.length){el.innerHTML='';return;}
+  items.sort(function(a,b){return b.spend-a.spend;});
+  var rows=items.map(function(a){
+    var pct=getAdSetSpendPct(a.adSet,a.campaign);
+    var days=Object.keys(a.days).length;
+    var cd=customData[a.adSet]||{};
+    var learning=cd.learning?cd.learning.trim().slice(0,80)+(cd.learning.length>80?'…':''):'';
+    return '<div class="hit-row">'      +'<div class="hit-row-name">'+esc(a.adSet)+(learning?'<div style="font-size:11px;color:var(--muted2);margin-top:2px;line-height:1.4;">'+esc(learning)+'</div>':'')+'<div class="hit-row-camp">'+esc(a.campaign)+'</div></div>'      +'<div style="text-align:right;flex-shrink:0;">'      +'<div class="hit-row-meta">$'+f2(a.spend)+' spent</div>'      +'<div class="hit-row-meta" style="color:'+color+';">'+pct.toFixed(1)+'% of camp.</div>'      +'<div class="hit-row-meta">'+days+' days</div>'      +'</div>'      +'</div>';
+  }).join('');
+
+  el.innerHTML='<div class="hit-section">'    +'<div class="hit-section-header">'    +'<div class="hit-section-dot" style="background:'+color+';"></div>'    +'<div class="hit-section-title" style="color:'+color+';">'+title+'</div>'    +'<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:4px;">'+subtitle+'</div>'    +'<div class="hit-section-count">'+items.length+' ad set'+(items.length!==1?'s':'')+'</div>'    +'</div>'    +rows    +'</div>';
+}
 
 // ── THEME ──
 function toggleTheme(){
