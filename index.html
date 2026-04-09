@@ -399,6 +399,7 @@ body.light .media-thumb-fallback{background:linear-gradient(135deg,#1a3a5c 0%,#0
 <!-- Admin bar (outside dashboard so it shows even with no data) -->
 <div class="admin-bar" id="adminBar" style="display:none;">
   <div class="admin-bar-text">🔓 Admin mode active — edits save to database automatically</div>
+  <button class="btn-admin" id="pendingLearnBtn" onclick="togglePendingLearnings()" title="Ad sets with 7+ days of spend but no learning written">📋 Pending Learnings</button>
   <button class="btn-admin active" onclick="openUploadModal()">↑ Upload New CSV</button>
   <button class="btn-admin" onclick="exitAdmin()" style="color:var(--muted2);">Exit</button>
 </div>
