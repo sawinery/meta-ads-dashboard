@@ -302,12 +302,16 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
 .first-day-badge{font-family:var(--mono);font-size:10px;color:var(--muted2);background:var(--surface2);padding:2px 6px;border-radius:3px;white-space:nowrap;}
 
 /* ── MEDIA THUMB ── */
-.media-thumb{width:52px;height:40px;border-radius:4px;overflow:hidden;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative;}
+.media-thumb{width:80px;height:56px;border-radius:5px;overflow:hidden;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative;}
 .media-thumb img{width:100%;height:100%;object-fit:cover;}
 .media-thumb video{width:100%;height:100%;object-fit:cover;}
-.media-thumb .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);}
-.media-thumb .play-overlay svg{width:12px;height:12px;fill:#fff;}
+.media-thumb .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);}
+.media-thumb .play-overlay svg{width:16px;height:16px;fill:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));}
 .media-thumb-empty{color:var(--muted);font-size:16px;}
+/* Stylish fallback thumbnail */
+.media-thumb-fallback{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--surface2) 0%,var(--border2) 100%);gap:3px;}
+.media-thumb-fallback svg{width:18px;height:18px;opacity:0.6;}
+.media-thumb-fallback span{font-family:var(--mono);font-size:8px;color:var(--muted2);text-align:center;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:74px;}
 .media-add-btn{font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;padding:2px 6px;border:1px dashed var(--border2);border-radius:3px;white-space:nowrap;margin-top:3px;}
 .media-add-btn:hover{border-color:var(--accent);color:var(--accent);}
 .media-cell{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;}
@@ -1351,8 +1355,12 @@ function mediaThumbCell(adSet, topAd, mediaUrl){
     if(isImg){
       thumbContent='<img src="'+directUrl+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">';
     } else {
-      thumbContent='<video src="'+directUrl+'" muted preload="metadata" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'"></video>'
-                  +'<div class="play-overlay"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>';
+      var vidId='vt_'+key;
+      // Load video and seek to 0.5s to get a thumbnail frame via canvas
+      thumbContent='<video id="'+vidId+'" src="'+directUrl+'" muted preload="metadata" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:none;" onloadeddata="captureVideoThumb(this)" onerror="showVideoFallback(this,\''+esc(mediaUrl)+'\')" ontimeupdate="captureVideoThumb(this)"></video>'
+        +'<canvas id="c_'+vidId+'" style="width:100%;height:100%;object-fit:cover;display:none;"></canvas>'
+        +'<div class="media-thumb-fallback" id="f_'+vidId+'"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M15.75 10.5l4.72-4.72v12.44l-4.72-4.72M4.5 18.75h10.5a2.25 2.25 0 002.25-2.25V7.5A2.25 2.25 0 0015 5.25H4.5A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z\"/></svg><span>'+mediaUrl.split('/').pop().slice(0,12)+'</span></div>'
+        +'<div class="play-overlay"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>';
     }
     inner='<div class="media-thumb" onclick="openMediaPlayer(window[\''+key+'\'],\''+mediaType+'\',window[\''+key+'_as\'])">'+thumbContent+'</div>';
   } else {
@@ -1677,6 +1685,40 @@ async function deleteVideoUrl(){
     if(drawerAdSet===adSet) renderDrawer();
     showToast('Media removed','success');
   }catch(e){showToast('Remove failed: '+e.message,'error');}
+}
+
+function captureVideoThumb(vid){
+  try{
+    if(vid._thumbDone) return;
+    if(vid.readyState < 2) return;
+    if(vid.currentTime === 0){ vid.currentTime = 0.5; return; }
+    var canvas = document.getElementById('c_'+vid.id);
+    var fallback = document.getElementById('f_'+vid.id);
+    if(!canvas) return;
+    canvas.width = vid.videoWidth||80;
+    canvas.height = vid.videoHeight||56;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+    // Check if canvas has real content (not black/blank)
+    var d = ctx.getImageData(0,0,10,10).data;
+    var sum = 0; for(var i=0;i<d.length;i++) sum+=d[i];
+    if(sum > 200){
+      canvas.style.display='block';
+      vid.style.display='none';
+      if(fallback) fallback.style.display='none';
+      vid._thumbDone=true;
+    } else {
+      showVideoFallback(vid, '');
+    }
+  } catch(e){ showVideoFallback(vid, ''); }
+}
+
+function showVideoFallback(vid, url){
+  var canvas = document.getElementById('c_'+vid.id);
+  var fallback = document.getElementById('f_'+vid.id);
+  if(canvas) canvas.style.display='none';
+  vid.style.display='none';
+  if(fallback) fallback.style.display='flex';
 }
 
 function toDirectDropboxUrl(url){
