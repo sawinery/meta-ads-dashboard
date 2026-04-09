@@ -602,8 +602,16 @@ body.light .media-thumb-fallback{background:linear-gradient(135deg,#1a3a5c 0%,#0
     </div>
   </div>
 
+  <div class="hit-filter-bar" style="margin-bottom:10px;">
+    <span style="font-family:var(--mono);font-size:11px;color:var(--muted2);">PERIOD:</span>
+    <div class="hit-filter-chip active" data-tf="all" onclick="setHitTimeframe('all',this)">All Time</div>
+    <div class="hit-filter-chip" data-tf="7d" onclick="setHitTimeframe('7d',this)">Last 7d</div>
+    <div class="hit-filter-chip" data-tf="30d" onclick="setHitTimeframe('30d',this)">Last 30d</div>
+    <div class="hit-filter-chip" data-tf="90d" onclick="setHitTimeframe('90d',this)">Last 90d</div>
+    <div class="hit-filter-chip" data-tf="thisMonth" onclick="setHitTimeframe('thisMonth',this)">This Month</div>
+  </div>
   <div class="hit-filter-bar">
-    <span style="font-family:var(--mono);font-size:11px;color:var(--muted2);">FILTER:</span>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--muted2);">CAMPAIGN:</span>
     <div class="hit-filter-chip active" data-camp="all" onclick="setHitCampFilter('all',this)">All Campaigns</div>
     <div id="hrCampFilters" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
   </div>
@@ -2217,6 +2225,7 @@ window.addEventListener('resize',function(){drawLineChart();});
 // ── NAV TABS ──
 var activeTab='dashboard';
 var hitCampFilter='all';
+var hitTimeframe='all'; // 'all', '7d', '30d', '90d', 'thisMonth'
 
 function switchTab(tab){
   activeTab=tab;
@@ -2228,11 +2237,32 @@ function switchTab(tab){
 }
 
 // ── HIT RATE ──
-function setHitCampFilter(camp, el){
-  hitCampFilter=camp;
-  document.querySelectorAll('.hit-filter-chip').forEach(function(c){c.classList.remove('active');});
+function setHitTimeframe(tf, el){
+  hitTimeframe=tf;
+  document.querySelectorAll('[data-tf]').forEach(function(c){c.classList.remove('active');});
   el.classList.add('active');
   renderHitRate();
+}
+
+function setHitCampFilter(camp, el){
+  hitCampFilter=camp;
+  document.querySelectorAll('[data-camp]').forEach(function(c){c.classList.remove('active');});
+  el.classList.add('active');
+  renderHitRate();
+}
+
+function getHitTimeframeDates(){
+  // Returns {from, to} as YYYY-MM-DD strings based on last data date
+  var allDays=Object.keys(allData.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{})).sort();
+  var last=allDays[allDays.length-1];
+  if(!last||hitTimeframe==='all') return {from:null,to:null};
+  var lastDt=new Date(last+'T00:00:00');
+  var from;
+  if(hitTimeframe==='7d'){var d=new Date(lastDt);d.setDate(d.getDate()-6);from=localDate(d);}
+  else if(hitTimeframe==='30d'){var d=new Date(lastDt);d.setDate(d.getDate()-29);from=localDate(d);}
+  else if(hitTimeframe==='90d'){var d=new Date(lastDt);d.setDate(d.getDate()-89);from=localDate(d);}
+  else if(hitTimeframe==='thisMonth'){from=last.slice(0,7)+'-01';}
+  return {from:from, to:last};
 }
 
 function getAdSetResult(adSet){
@@ -2240,16 +2270,16 @@ function getAdSetResult(adSet){
   return cd.result||'';
 }
 
-function getAdSetSpendPct(adSet, camp){
-  // Get this adSet's spend as % of campaign total (all time)
-  var campTotal=allData.filter(function(r){return r.campaign===camp;}).reduce(function(s,r){return s+r.spend;},0);
-  var asTotal=allData.filter(function(r){return r.adSet===adSet&&r.campaign===camp;}).reduce(function(s,r){return s+r.spend;},0);
+function getAdSetSpendPct(adSet, camp, data){
+  var d=data||allData;
+  var campTotal=d.filter(function(r){return r.campaign===camp;}).reduce(function(s,r){return s+r.spend;},0);
+  var asTotal=d.filter(function(r){return r.adSet===adSet&&r.campaign===camp;}).reduce(function(s,r){return s+r.spend;},0);
   return campTotal>0?asTotal/campTotal*100:0;
 }
 
-function classifyAdSet(adSet, camp){
+function classifyAdSet(adSet, camp, data){
   var result=getAdSetResult(adSet);
-  var pct=getAdSetSpendPct(adSet, camp);
+  var pct=getAdSetSpendPct(adSet, camp, data);
   if(result==='Breakthrough'||pct>=50) return 'breakthrough';
   if(result==='Winner'&&pct>=35) return 'super';
   if(result==='Winner') return 'winner';
@@ -2258,6 +2288,13 @@ function classifyAdSet(adSet, camp){
 }
 
 function renderHitRate(){
+  // Apply timeframe filter
+  var tf=getHitTimeframeDates();
+  var hitData=tf.from?allData.filter(function(r){
+    var d=String(r.day).slice(0,10);
+    return d>=tf.from&&d<=tf.to;
+  }):allData;
+
   // Build campaign filter chips
   var camps=[...new Set(allData.map(function(r){return r.campaign;}))].sort();
   var chipContainer=document.getElementById('hrCampFilters');
@@ -2274,7 +2311,7 @@ function renderHitRate(){
   // Get all ad sets for the selected campaign(s)
   var filtCamps=hitCampFilter==='all'?camps:[hitCampFilter];
   var adSetMap={};
-  allData.forEach(function(r){
+  hitData.forEach(function(r){
     if(filtCamps.indexOf(r.campaign)===-1) return;
     var key=r.adSet+'||'+r.campaign;
     if(!adSetMap[key]) adSetMap[key]={adSet:r.adSet,campaign:r.campaign,spend:0,days:{}};
@@ -2288,7 +2325,7 @@ function renderHitRate(){
   // Classify each
   var breakdown={breakthrough:[],super:[],winner:[],loser:[],none:[]};
   allAdSets.forEach(function(a){
-    var cls=classifyAdSet(a.adSet,a.campaign);
+    var cls=classifyAdSet(a.adSet,a.campaign,hitData);
     breakdown[cls].push(a);
   });
 
@@ -2317,7 +2354,7 @@ function renderHitSection(elId, title, subtitle, color, items, type){
   if(!items.length){el.innerHTML='';return;}
   items.sort(function(a,b){return b.spend-a.spend;});
   var rows=items.map(function(a){
-    var pct=getAdSetSpendPct(a.adSet,a.campaign);
+    var pct=getAdSetSpendPct(a.adSet,a.campaign);  // always show all-time pct for context
     var days=Object.keys(a.days).length;
     var cd=customData[a.adSet]||{};
     var learning=cd.learning?cd.learning.trim().slice(0,80)+(cd.learning.length>80?'…':''):'';
