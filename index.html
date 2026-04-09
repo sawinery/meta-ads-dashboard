@@ -7,7 +7,41 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c23;--border:#1e2530;--border2:#252d3a;--text:#e2e8f0;--muted:#4a5568;--muted2:#6b7280;--accent:#00d4aa;--accent2:#0ea5e9;--warn:#f59e0b;--purple:#8b5cf6;--red:#ef4444;--pink:#ec4899;--green:#10b981;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
-body.light{--bg:#eef0f4;--surface:#f5f6f9;--surface2:#e8eaef;--border:#d0d4dc;--border2:#b8bec9;--text:#1a1f2e;--muted:#8892a4;--muted2:#5c6680;--accent:#009975;--accent2:#0369a1;--warn:#b45309;--purple:#6d28d9;--red:#b91c1c;--pink:#be185d;--green:#047857;}
+body.light{
+  --bg:#f0f2f7;--surface:#ffffff;--surface2:#f7f8fb;
+  --border:#e2e5ed;--border2:#cdd1dc;
+  --text:#111827;--muted:#9ca3af;--muted2:#6b7280;
+  --accent:#00957a;--accent2:#1d6fa4;--warn:#b45309;
+  --purple:#6d28d9;--red:#b91c1c;--pink:#be185d;--green:#047857;
+}
+/* Light mode surface overrides for depth */
+body.light .topbar{background:rgba(255,255,255,0.96);box-shadow:0 1px 0 var(--border),0 2px 8px rgba(0,0,0,0.06);}
+body.light .panel{box-shadow:0 1px 3px rgba(0,0,0,0.07),0 1px 0 var(--border);}
+body.light .kpi{box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+body.light .adset-panel{box-shadow:0 1px 3px rgba(0,0,0,0.07);}
+body.light .drawer{box-shadow:-4px 0 24px rgba(0,0,0,0.12);}
+body.light th{background:#f0f2f7;color:#6b7280;}
+body.light td{background:#fff;}
+body.light tr.adset-row:hover td{background:#f7f8fb !important;}
+body.light td:nth-child(1),body.light td:nth-child(2){background:#fff;}
+body.light tr.adset-row:hover td:nth-child(1),body.light tr.adset-row:hover td:nth-child(2){background:#f0f2f7 !important;}
+body.light .camp-chip{background:#fff;border-color:var(--border2);box-shadow:0 1px 2px rgba(0,0,0,0.06);}
+body.light .camp-chip.active{background:rgba(0,149,122,0.08);}
+body.light .admin-bar{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+body.light .drawer-custom{background:#f7f8fb;}
+body.light .rich-editor-wrap{background:#fff;}
+body.light .chart-tooltip{box-shadow:0 4px 16px rgba(0,0,0,0.12);}
+body.light .modal{box-shadow:0 8px 40px rgba(0,0,0,0.15);}
+body.light .kpi::before{opacity:0.8;}
+body.light .type-badge{font-weight:600;}
+body.light .ad-card{background:#f7f8fb;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+body.light .ramp-bar-tip{box-shadow:0 2px 8px rgba(0,0,0,0.12);}
+body.light select,body.light .type-select{background:#fff;border-color:var(--border2);}
+body.light .btn{color:var(--text);}
+body.light .btn:hover{border-color:var(--accent);color:var(--accent);}
+body.light .filter-label{color:var(--muted2);}
+body.light .data-status{background:#f0f2f7;}
+body.light .editable-val:hover{background:#eef0f6;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;min-height:100vh;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
@@ -439,6 +473,7 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th onclick="sortTable('adSet')" style="width:220px;min-width:220px;max-width:220px;">AD SET ↕</th>
           <th>TOP VAR. PREVIEW</th>
           <th>TYPE<i class="tip" data-tip="New Concept or Iteration — classify this ad set's creative approach.">?</i></th>
+          <th>EDITOR<i class="tip" data-tip="Video editor who made this ad.">?</i></th>
           <th>ANGLE<i class="tip" data-tip="Creative angle used in this ad set.">?</i></th>
           <th>AWARENESS<i class="tip" data-tip="Awareness level targeted (e.g. Cold, Warm, Hot).">?</i></th>
           <th>AVATAR<i class="tip" data-tip="Core avatar / target customer this ad set speaks to.">?</i></th>
@@ -448,8 +483,8 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>1ST SPEND DAY<i class="tip" data-tip="First day this ad set recorded spend.">?</i></th>
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
-          <th>7D RAMP<i class="tip" data-tip="Spend % of total per day for the first 7 days since launch. Shows how quickly this ad set ramped up.">?</i></th>
-          <th>7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
+          <th>FIRST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the first 7 days since launch.">?</i></th>
+          <th>FIRST 7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
           <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
           <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
@@ -637,6 +672,7 @@ async function loadCustomData(){
     if((!r.ad || r.ad === '')){
       if(r.video_url) map[key].video_url = r.video_url;
       if(r.ad_type) map[key].adType = r.ad_type;
+      if(r.editor) map[key].editor = r.editor;
     }
   });
   return map;
@@ -1357,7 +1393,7 @@ function mediaThumbCell(adSet, topAd, mediaUrl){
     } else {
       var vidId='vt_'+key;
       // Load video and seek to 0.5s to get a thumbnail frame via canvas
-      thumbContent='<video id="'+vidId+'" src="'+directUrl+'" muted preload="metadata" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:none;" onloadeddata="captureVideoThumb(this)" onerror="showVideoFallback(this,\''+esc(mediaUrl)+'\')" ontimeupdate="captureVideoThumb(this)"></video>'
+      thumbContent='<video id="'+vidId+'" src="'+directUrl+'" muted preload="metadata" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;display:none;" onloadeddata="captureVideoThumb(this)" onerror="showVideoFallback(this)" ontimeupdate="captureVideoThumb(this)"></video>'
         +'<canvas id="c_'+vidId+'" style="width:100%;height:100%;object-fit:cover;display:none;"></canvas>'
         +'<div class="media-thumb-fallback" id="f_'+vidId+'"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M15.75 10.5l4.72-4.72v12.44l-4.72-4.72M4.5 18.75h10.5a2.25 2.25 0 002.25-2.25V7.5A2.25 2.25 0 0015 5.25H4.5A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z\"/></svg><span>'+mediaUrl.split('/').pop().slice(0,12)+'</span></div>'
         +'<div class="play-overlay"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>';
@@ -1369,6 +1405,27 @@ function mediaThumbCell(adSet, topAd, mediaUrl){
   var addBtn=isAdmin?'<span class="media-add-btn" onclick="openVideoEdit(window[\''+key+'_as\'],window[\''+key+'_ta\'],window[\''+key+'\'])">'+(mediaUrl?'✎':'+ Add')+'</span>':'';
 
   return '<td onclick="event.stopPropagation();" style="min-width:70px;"><div class="media-cell">'+inner+addBtn+'</div></td>';
+}
+
+function editorDropdownCell(adSet, val){
+  var editors=['','Dmytro','Jacque','Jeremy','Johnny'];
+  var cell='<td onclick="event.stopPropagation();" style="min-width:110px;">';
+  if(isAdmin){
+    cell+='<select class="type-select" onchange="saveEditorField(this,\''+esc(adSet)+'\')">'+
+      editors.map(function(e){return '<option value="'+e+'"'+(e===val?' selected':'')+'>'+( e||'—')+'</option>';}).join('')+
+      '</select>';
+  } else {
+    cell+=val?'<span class="type-badge" style="background:var(--surface2);color:var(--text);">'+val+'</span>':'<span style="color:var(--muted);font-size:11px;">—</span>';
+  }
+  return cell+'</td>';
+}
+
+async function saveEditorField(el, adSet){
+  var val=el.value;
+  if(!customData[adSet]) customData[adSet]={};
+  customData[adSet].editor=val;
+  try{ await upsertCustom(adSet,null,{editor:val}); showToast('Saved','success'); }
+  catch(e){ showToast('Save failed','error'); }
 }
 
 function typeDropdownCell(adSet, val){
@@ -1419,6 +1476,7 @@ function renderTable(){
       '<td style="white-space:normal;word-break:break-word;width:220px;min-width:220px;max-width:220px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
       +mediaThumbCell(a.adSet, topAd, mediaUrl)
       +typeDropdownCell(a.adSet, cd.adType||'')
+      +editorDropdownCell(a.adSet, cd.editor||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:180px;">'+editableDiv(a.adSet,'angle',cd.angle||'','Angle…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:160px;">'+editableDiv(a.adSet,'awareness',cd.awareness||'','Awareness…')+'</td>'
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:200px;">'+editableDiv(a.adSet,'coreAvatar',cd.coreAvatar||'','Core avatar…')+'</td>'
@@ -1691,29 +1749,27 @@ function captureVideoThumb(vid){
   try{
     if(vid._thumbDone) return;
     if(vid.readyState < 2) return;
-    if(vid.currentTime === 0){ vid.currentTime = 0.5; return; }
+    if(vid.currentTime < 0.5){ vid.currentTime = 0.5; return; }
     var canvas = document.getElementById('c_'+vid.id);
     var fallback = document.getElementById('f_'+vid.id);
     if(!canvas) return;
-    canvas.width = vid.videoWidth||80;
-    canvas.height = vid.videoHeight||56;
+    canvas.width = vid.videoWidth||160;
+    canvas.height = vid.videoHeight||90;
     var ctx = canvas.getContext('2d');
     ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-    // Check if canvas has real content (not black/blank)
-    var d = ctx.getImageData(0,0,10,10).data;
-    var sum = 0; for(var i=0;i<d.length;i++) sum+=d[i];
-    if(sum > 200){
-      canvas.style.display='block';
+    var d = ctx.getImageData(0,0,20,20).data;
+    var sum = 0; for(var i=0;i<d.length;i+=4) sum+=d[i]+d[i+1]+d[i+2];
+    if(sum > 500){
+      canvas.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
       vid.style.display='none';
       if(fallback) fallback.style.display='none';
       vid._thumbDone=true;
-    } else {
-      showVideoFallback(vid, '');
-    }
-  } catch(e){ showVideoFallback(vid, ''); }
+    } else { showVideoFallback(vid); }
+  } catch(e){ showVideoFallback(vid); }
 }
 
-function showVideoFallback(vid, url){
+function showVideoFallback(vid){
+  if(!vid) return;
   var canvas = document.getElementById('c_'+vid.id);
   var fallback = document.getElementById('f_'+vid.id);
   if(canvas) canvas.style.display='none';
@@ -1762,6 +1818,12 @@ function renderDrawer(){
       +'</select>'
     :'<input class="custom-field-input" id="dcType" value="'+esc(cd.adType||'')+'" readonly>';
 
+  var editors2=['','Dmytro','Jacque','Jeremy','Johnny'];
+  var editorDrawerHtml=isAdmin
+    ?'<select class="custom-field-input" id="dcEditor" style="cursor:pointer;">'+
+      editors2.map(function(e){return '<option value="'+e+'"'+(e===(cd.editor||'')?'selected':'')+'>'+( e||'— Select editor')+'</option>';}).join('')+
+      '</select>'
+    :'<input class="custom-field-input" id="dcEditor" value="'+esc(cd.editor||'')+'" readonly>';
   var resultOpts=['','Winner','Loser','Breakthrough'];
   var resultSelectHtml=isAdmin
     ?'<select class="custom-field-input" id="dcResult" style="cursor:pointer;">'
@@ -1811,6 +1873,7 @@ async function saveDrawerCustom(explicit){
   var awareness=document.getElementById('dcAwareness')?document.getElementById('dcAwareness').value.trim():'';
   var dcLearnEl=document.getElementById('dcLearning');var learning=dcLearnEl?(dcLearnEl.tagName==='TEXTAREA'?dcLearnEl.value:dcLearnEl.innerText||'').trim():'';
   var adType=document.getElementById('dcType')?document.getElementById('dcType').value.trim():'';
+  var editor=document.getElementById('dcEditor')?document.getElementById('dcEditor').value.trim():'';
   if(!customData[drawerAdSet]) customData[drawerAdSet]={angle:'',awareness:'',learning:'',adType:'',videos:{}};
   var result=document.getElementById('dcResult')?document.getElementById('dcResult').value.trim():'';
   var coreAvatar=document.getElementById('dcCoreAvatar')?document.getElementById('dcCoreAvatar').value.trim():'';
@@ -1822,6 +1885,7 @@ async function saveDrawerCustom(explicit){
   customData[drawerAdSet].awareness=awareness;
   customData[drawerAdSet].learning=learning;
   customData[drawerAdSet].adType=adType;
+  customData[drawerAdSet].editor=editor;
   customData[drawerAdSet].result=result;
   customData[drawerAdSet].coreAvatar=coreAvatar;
   customData[drawerAdSet].subAvatar=subAvatar;
@@ -1829,7 +1893,7 @@ async function saveDrawerCustom(explicit){
   customData[drawerAdSet].whyTesting=whyTesting;
   customData[drawerAdSet].briefUrl=briefUrl;
   try{
-    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning, ad_type:adType,
+    await upsertCustom(drawerAdSet, null, {angle:angle, awareness_level:awareness, learning:learning, ad_type:adType, editor:editor,
       result:result, core_avatar:coreAvatar, sub_avatar:subAvatar,
       what_testing:whatTesting, why_testing:whyTesting, brief_url:briefUrl});
     if(explicit) showToast('Saved','success');
