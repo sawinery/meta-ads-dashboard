@@ -487,6 +487,7 @@ body.light .media-thumb-fallback{background:linear-gradient(135deg,#1a3a5c 0%,#0
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
           <th>LAST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the last 7 days this ad set had spend. Shows recent momentum.">?</i></th>
           <th>FIRST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the first 7 days since launch.">?</i></th>
+          <th>FIRST 7D CPA<i class="tip" data-tip="This ad set's CPA (cost per purchase) during its first 7 days of spend.">?</i></th>
           <th>FIRST 7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
           <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
@@ -1384,6 +1385,24 @@ function last7RampHtml(adSet){
   return '<div class="ramp-cell"><div class="ramp-bars" style="align-items:flex-end;">'+bars+'</div><span class="ramp-pct">avg '+avg+'%/day</span></div>';
 }
 
+function first7CpaHtml(adSet){
+  var allRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
+  if(!allRows.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var daySpend={};
+  allRows.forEach(function(r){var d=String(r.day).slice(0,10);daySpend[d]=(daySpend[d]||0)+r.spend;});
+  var first7=Object.keys(daySpend).sort().slice(0,7);
+  // Sum spend + purchases for this adSet only during first 7 days
+  var totalSpend=0,totalP=0;
+  allData.filter(function(r){
+    return r.adSet===adSet&&r.campaign===activeCamp&&first7.indexOf(String(r.day).slice(0,10))!==-1;
+  }).forEach(function(r){totalSpend+=r.spend;totalP+=r.purchases;});
+  var cpa=totalP>0?totalSpend/totalP:0;
+  if(!cpa) return '<span style="color:var(--muted);font-size:11px;">-</span>';
+  var color=cpa<30?'var(--accent)':cpa<60?'var(--warn)':'var(--red)';
+  return '<span style="font-family:var(--mono);font-size:12px;font-weight:600;color:'+color+';">$'+cpa.toFixed(2)+'</span>'
+    +'<div style="font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:2px;">'+Math.round(totalP)+' orders</div>';
+}
+
 function spendRampHtml(adSet){
   var ramp=getSpendRamp(adSet);
   if(!ramp.length) return '<span style="color:var(--muted);font-size:11px;">-</span>';
@@ -1519,6 +1538,7 @@ function renderTable(){
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
       +'<td onclick="event.stopPropagation();">'+last7RampHtml(a.adSet)+'</td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
+      +'<td onclick="event.stopPropagation();">'+first7CpaHtml(a.adSet)+'</td>'
       +'<td onclick="event.stopPropagation();">'+campPerf7Html(a.adSet)+'</td>'
       +resultDropdownCell(a.adSet, cd.result||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:300px;max-width:440px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
