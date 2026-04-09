@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meta Ads Dashboard</title>
+<title>Sawinery Ads Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c23;--border:#1e2530;--border2:#252d3a;--text:#e2e8f0;--muted:#4a5568;--muted2:#6b7280;--accent:#00d4aa;--accent2:#0ea5e9;--warn:#f59e0b;--purple:#8b5cf6;--red:#ef4444;--pink:#ec4899;--green:#10b981;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
@@ -50,8 +50,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;border-bottom:1px solid var(--border);background:rgba(17,19,24,0.97);position:sticky;top:0;z-index:100;gap:16px;flex-wrap:wrap;}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);}
+.logo img{height:28px;width:auto;object-fit:contain;}
 .logo-dot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;}
+.logo-divider{width:1px;height:18px;background:var(--border2);}
 .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .data-status{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:4px 10px;border:1px solid var(--border2);border-radius:3px;}
 
@@ -377,7 +379,12 @@ body.light .media-thumb-fallback{background:linear-gradient(135deg,#1a3a5c 0%,#0
 <body>
 
 <div class="topbar">
-  <div class="logo"><div class="logo-dot"></div>META ADS · DASHBOARD</div>
+  <div class="logo">
+    <img src="https://www.sawinery.net/cdn/shop/files/Logo.png?v=1740032645" alt="Sawinery" onerror="this.style.display='none'">
+    <div class="logo-divider"></div>
+    <div class="logo-dot"></div>
+    <span>ADS DASHBOARD</span>
+  </div>
   <div class="topbar-right">
     <div class="data-status" id="maxDateBadge" style="color:var(--accent);opacity:0.8;"></div>
     <div class="data-status" id="dataStatus">Loading…</div>
@@ -607,6 +614,7 @@ var isAdmin=false;
 var hiddenCampaigns={};
 var activeCamp=null, dateFrom='', dateTo='', searchTerm='', sortKey='spend', sortDir=-1;
 var chartMetric='spend', activeMetrics={spend:true}, filteredData=[], chartDays=[], chartByCD={};
+var showPendingLearnings=false;
 var chartPad={l:52,r:16,t:12,b:28};
 var drawerAdSet=null, drawerTab='variations';
 var videoTarget={adSet:null, ad:null}; // which row/card we're editing video for
@@ -916,6 +924,27 @@ function parseCSVRow(line){
 function pn(v){if(v===undefined||v===null||v==='')return 0;var n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;}
 
 // ── DASHBOARD ──
+function togglePendingLearnings(){
+  showPendingLearnings=!showPendingLearnings;
+  var btn=document.getElementById('pendingLearnBtn');
+  if(btn){
+    btn.classList.toggle('active', showPendingLearnings);
+    btn.textContent=showPendingLearnings?'✕ Clear Filter':'📋 Pending Learnings';
+  }
+  renderTable();
+}
+
+function isPendingLearning(adSet){
+  // Ad set is "pending learning" if:
+  // 1. It has 7+ days of spend in all data
+  // 2. Has no learning written yet
+  var cd=customData[adSet]||{};
+  if(cd.learning&&cd.learning.trim()) return false; // already has learning
+  var allRows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
+  var days=Object.keys(allRows.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{}));
+  return days.length>=7; // 7+ days of spend with no learning
+}
+
 function renderCampBar(camps){
   var bar=document.getElementById('campBar');bar.innerHTML='';
   // Load hidden campaigns from localStorage
@@ -1507,6 +1536,7 @@ async function saveTypeField(el, adSet){
 function renderTable(){
   var adSets=getAdSets();
   if(searchTerm)adSets=adSets.filter(function(a){return a.adSet.toLowerCase().indexOf(searchTerm)!==-1;});
+  if(showPendingLearnings)adSets=adSets.filter(function(a){return isPendingLearning(a.adSet);});
   adSets.sort(function(a,b){var av=a[sortKey]||0,bv=b[sortKey]||0;if(typeof av==='string')return av.localeCompare(bv)*sortDir;return(av-bv)*sortDir;});
   var maxSpend=Math.max.apply(null,adSets.map(function(a){return a.spend;}).concat([1]));
   var tbody=document.getElementById('adSetBody');tbody.innerHTML='';
@@ -1523,7 +1553,7 @@ function renderTable(){
     var tr=document.createElement('tr');tr.className='adset-row';
 
     var html=
-      '<td style="white-space:normal;word-break:break-word;width:220px;min-width:220px;max-width:220px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      '<td style="white-space:normal;word-break:break-word;width:220px;min-width:220px;max-width:220px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+(isPendingLearning(a.adSet)?'<span style="display:inline-block;margin-left:5px;padding:1px 5px;background:rgba(245,158,11,0.15);color:var(--warn);font-family:var(--mono);font-size:9px;border-radius:2px;vertical-align:middle;">NEEDS LEARNING</span>':'')+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
       +mediaThumbCell(a.adSet, topAd, mediaUrl)
       +typeDropdownCell(a.adSet, cd.adType||'')
       +editorDropdownCell(a.adSet, cd.editor||'')
