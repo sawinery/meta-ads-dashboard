@@ -1253,6 +1253,12 @@ function sortTable(key){
   renderTable();
 }
 
+function getTotalDaysAllTime(adSet){
+  var rows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
+  var days=Object.keys(rows.reduce(function(a,r){a[String(r.day).slice(0,10)]=1;return a;},{}));
+  return days.length;
+}
+
 function getFirstSpendDay(adSet){
   var rows=allData.filter(function(r){return r.adSet===adSet&&r.campaign===activeCamp&&r.spend>0;});
   if(!rows.length) return '-';
@@ -1554,7 +1560,7 @@ function renderTable(){
     var tr=document.createElement('tr');tr.className='adset-row';
 
     var html=
-      '<td style="white-space:normal;word-break:break-word;width:220px;min-width:220px;max-width:220px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+(isPendingLearning(a.adSet)?'<span style="display:inline-block;margin-left:5px;padding:1px 5px;background:rgba(245,158,11,0.15);color:var(--warn);font-family:var(--mono);font-size:9px;border-radius:2px;vertical-align:middle;">NEEDS LEARNING</span>':'')+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+a.days+' days</div></td>'
+      '<td style="white-space:normal;word-break:break-word;width:220px;min-width:220px;max-width:220px;line-height:1.4;font-weight:500;">'+esc(a.adSet)+(isPendingLearning(a.adSet)?'<span style="display:inline-block;margin-left:5px;padding:1px 5px;background:rgba(245,158,11,0.15);color:var(--warn);font-family:var(--mono);font-size:9px;border-radius:2px;vertical-align:middle;">NEEDS LEARNING</span>':'')+'<div style="font-size:10px;color:var(--muted2);margin-top:2px;font-family:var(--mono);">'+a.ads+' ads · '+getTotalDaysAllTime(a.adSet)+' days</div></td>'
       +mediaThumbCell(a.adSet, topAd, mediaUrl)
       +typeDropdownCell(a.adSet, cd.adType||'')
       +editorDropdownCell(a.adSet, cd.editor||'')
