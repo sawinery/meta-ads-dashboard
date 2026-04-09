@@ -483,9 +483,9 @@ th .tip::before{bottom:auto;top:calc(100% + 1px);left:10px;transform:none;border
           <th>1ST SPEND DAY<i class="tip" data-tip="First day this ad set recorded spend.">?</i></th>
           <th onclick="sortTable('spend')" class="sorted">SPEND ↓<i class="tip" data-tip="Total ad spend.">?</i></th>
           <th>SPEND %<i class="tip" data-tip="Share of campaign spend.">?</i></th>
+          <th>LAST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the last 7 days this ad set had spend. Shows recent momentum.">?</i></th>
           <th>FIRST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the first 7 days since launch.">?</i></th>
           <th>FIRST 7D CAMP. PERF<i class="tip" data-tip="Campaign ROAS and CPA during this ad set's first 7 days of spend. Shows how launching this ad set affected overall campaign performance.">?</i></th>
-          <th>LAST 7D RAMP<i class="tip" data-tip="Spend % of total campaign per day for the last 7 days this ad set had spend. Shows recent momentum.">?</i></th>
           <th>RESULT<i class="tip" data-tip="Overall result: Winner, Loser, or Breakthrough.">?</i></th>
           <th>LEARNING<i class="tip" data-tip="Key insights from testing this ad set.">?</i></th>
           <th>BRIEF<i class="tip" data-tip="Link to the creative brief for this ad set.">?</i></th>
@@ -1515,9 +1515,9 @@ function renderTable(){
       +'<td onclick="event.stopPropagation();"><span class="first-day-badge">'+getFirstSpendDay(a.adSet)+'</span></td>'
       +'<td style="font-family:var(--mono);color:var(--accent);white-space:nowrap;font-weight:500;">$'+f2(a.spend)+'<div style="margin-top:4px;height:4px;background:var(--border2);border-radius:2px;width:80px;"><div style="height:100%;width:'+barW+'%;background:var(--accent);border-radius:2px;"></div></div></td>'
       +'<td><div class="spend-bar"><div class="bar-bg"><div class="bar-fill" style="width:'+a.spendPct.toFixed(1)+'%;"></div></div><span class="pct-label">'+a.spendPct.toFixed(1)+'%</span></div></td>'
+      +'<td onclick="event.stopPropagation();">'+last7RampHtml(a.adSet)+'</td>'
       +'<td onclick="event.stopPropagation();">'+spendRampHtml(a.adSet)+'</td>'
       +'<td onclick="event.stopPropagation();">'+campPerf7Html(a.adSet)+'</td>'
-      +'<td onclick="event.stopPropagation();">'+last7RampHtml(a.adSet)+'</td>'
       +resultDropdownCell(a.adSet, cd.result||'')
       +'<td class="editable-cell" onclick="event.stopPropagation();" style="min-width:300px;max-width:440px;">'+editableDiv(a.adSet,'learning',cd.learning||'','Add learning…')+'</td>'
       +briefCell(a.adSet, cd.briefUrl||'')
