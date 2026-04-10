@@ -559,7 +559,9 @@ body.light .media-thumb-fallback{background:linear-gradient(135deg,#1a3a5c 0%,#0
           <th onclick="sortTable('purchases')">PURCHASES ↕<i class="tip" data-tip="Total purchase conversions.">?</i></th>
           <th onclick="sortTable('freq')">FREQ ↕<i class="tip" data-tip="Avg times each person saw your ad.">?</i></th>
           <th onclick="sortTable('ctr')">CTR ↕<i class="tip" data-tip="Clicks ÷ impressions × 100.">?</i></th>
-          <th onclick="sortTable('hook')">HOOK ↕<i class="tip" data-tip="% who watched 3+ seconds.">?</i></th>
+          <th onclick="sortTable('hook')">HOOK ↕<i class="tip" data-tip="% who watched at least 3 seconds of the video.">?</i></th>
+          <th onclick="sortTable('hook_to_hold')">HOOK→HOLD ↕<i class="tip" data-tip="Hook to Hold Rate: % of 3-sec viewers who continued watching to 15 seconds.">?</i></th>
+          <th onclick="sortTable('hold_rate')">HOLD RATE ↕<i class="tip" data-tip="Hold Rate: % of impressions that watched to 15+ seconds.">?</i></th>
           <th onclick="sortTable('cvr')">CVR ↕<i class="tip" data-tip="Purchases ÷ landing page views × 100.">?</i></th>
           <th onclick="sortTable('aov')">AOV ↕<i class="tip" data-tip="Average order value.">?</i></th>
           <th onclick="sortTable('atc')">ATC ↕<i class="tip" data-tip="Adds to cart.">?</i></th>
@@ -852,6 +854,7 @@ window.addEventListener('load', async function(){
           aov: +r.aov||0, reach: +r.reach||0, impressions: +r.impressions||0,
           freq: +r.freq||0, ctr: +r.ctr||0, cpm: +r.cpm||0, atc: +r.atc||0,
           clicks: +r.clicks||0, lp_views: +r.lp_views||0, hook_rate: +r.hook_rate||0,
+          hook_to_hold: +r.hook_to_hold||0, hold_rate: +r.hold_rate||0,
           cvr_pct: +r.cvr_pct||0
         };
       });
@@ -969,6 +972,7 @@ function processCSVFile(file){
           spend:r.spend,purchases:r.purchases,conv_val:r.conv_val,aov:r.aov,
           reach:r.reach,impressions:r.impressions,freq:r.freq,ctr:r.ctr,
           cpm:r.cpm,atc:r.atc,lp_views:r.lp_views,hook_rate:r.hook_rate,
+          hook_to_hold:r.hook_to_hold,hold_rate:r.hold_rate,
           clicks:r.clicks,cvr_pct:r.cvr_pct};
       });
       await insertAdData(dbRows);
@@ -999,9 +1003,10 @@ function parseCSV(text){
   var dayC=col('reporting starts'),campC=col('campaign name'),adSetC=col('ad set name'),adC=col('ad name'),spendC=col('amount spent (usd)');
   if(dayC<0||campC<0||adSetC<0||spendC<0) return{error:'Missing required columns: Reporting starts, Campaign name, Ad set name, Amount spent (USD)'};
   var purchC=col('results'),cvC=col('purchases conversion value'),reachC=col('reach'),impC=col('impressions');
-  var ctrC=col('ctr (all)'),cpmC=col('cpm (cost per 1,000 impressions) (usd)'),atcC=col('adds to cart');
+  var ctrC=col('ctr (all)')>=0?col('ctr (all)'):col('unique ctr (link click-through rate)'),cpmC=col('cpm (cost per 1,000 impressions) (usd)'),atcC=col('adds to cart');
   var hookC=col('hook rate'),freqC=col('frequency'),lpC=col('website landing page views'),aovC=col('average purchases conversion value');
   var clicksC=col('unique link clicks'),cvrC=col('cvr');
+  var hookToHoldC=col('hook to hold rate'),holdRateC=col('hold rate new');
   var rows=[];
   for(var i=1;i<lines.length;i++){
     var c=parseCSVRow(lines[i]);
@@ -1015,8 +1020,10 @@ function parseCSV(text){
     var lp=pn(lpC>=0?c[lpC]:0),aov=pn(aovC>=0?c[aovC]:0);
     var clicks=pn(clicksC>=0?c[clicksC]:0);
     var cvr_raw=pn(cvrC>=0?c[cvrC]:0);
+    var hook_to_hold=pn(hookToHoldC>=0?c[hookToHoldC]:0);
+    var hold_rate=pn(holdRateC>=0?c[holdRateC]:0);
     if(spend<=0&&purch<=0&&imp<=0) continue;
-    rows.push({day,campaign:camp,adSet,ad,spend,purchases:purch,conv_val:cv,aov,reach,impressions:imp,freq,ctr,cpm:cpm2,atc,clicks:clicks,lp_views:lp,hook_rate:hook,cvr_pct:cvr_raw*100});
+    rows.push({day,campaign:camp,adSet,ad,spend,purchases:purch,conv_val:cv,aov,reach,impressions:imp,freq,ctr,cpm:cpm2,atc,clicks:clicks,lp_views:lp,hook_rate:hook,hook_to_hold,hold_rate,cvr_pct:cvr_raw*100});
   }
   if(!rows.length) return{error:'No valid data rows found.'};
   return rows;
@@ -1317,12 +1324,17 @@ function getAdSets(){
   var by={};
   filteredData.forEach(function(r){
     var k=r.adSet;
-    if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,ctr_n:0,ctr_d:0,cvr_n:0,cvr_d:0,days:{},ads:{}};
+    if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,ctr_n:0,ctr_d:0,cvr_n:0,cvr_d:0,freq_n:0,freq_d:0,h2h_n:0,h2h_d:0,hold_n:0,hold_d:0,days:{},ads:{}};
     by[k].spend+=r.spend;by[k].p+=r.purchases;by[k].cv+=r.conv_val;by[k].reach+=r.reach;by[k].imp+=r.impressions;by[k].atc+=r.atc;by[k].lp_views+=r.lp_views;
     if(r.hook_rate>0){by[k].hook_n+=r.hook_rate*r.impressions;by[k].imp_h+=r.impressions;}
     if(r.aov>0){by[k].cv_sum+=r.aov;by[k].cv_cnt++;}
     // CTR: weighted by impressions
     if(r.ctr>0){by[k].ctr_n+=r.ctr*r.impressions;by[k].ctr_d+=r.impressions;}
+    // Frequency: weighted by impressions
+    if(r.freq>0){by[k].freq_n+=r.freq*r.impressions;by[k].freq_d+=r.impressions;}
+    // Hook to Hold & Hold Rate: weighted by impressions
+    if(r.hook_to_hold>0){by[k].h2h_n+=r.hook_to_hold*r.impressions;by[k].h2h_d+=r.impressions;}
+    if(r.hold_rate>0){by[k].hold_n+=r.hold_rate*r.impressions;by[k].hold_d+=r.impressions;}
     // CVR: weighted by lp_views
     if(r.cvr_pct>0&&r.lp_views>0){by[k].cvr_n+=r.cvr_pct*r.lp_views;by[k].cvr_d+=r.lp_views;}
     by[k].days[r.day]=true;by[k].ads[r.ad]=true;
@@ -1331,7 +1343,9 @@ function getAdSets(){
     var a=by[k],d=Object.keys(a.days).length;
     return{adSet:a.adSet,spend:a.spend,purchases:a.p,conv_val:a.cv,
       cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,
-      reach:a.reach,freq:a.reach>0?a.imp/a.reach:0,
+      reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,
+      hook_to_hold:a.h2h_d>0?a.h2h_n/a.h2h_d:0,
+      hold_rate:a.hold_d>0?a.hold_n/a.hold_d:0,
       ctr:a.ctr_d>0?a.ctr_n/a.ctr_d:0,
       hook:a.imp_h>0?a.hook_n/a.imp_h:0,
       cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,
@@ -1691,6 +1705,8 @@ function renderTable(){
       +'<td style="font-family:var(--mono);color:var(--pink);">'+(a.freq>0?a.freq.toFixed(2):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--muted2);">'+(a.ctr>0?a.ctr.toFixed(2)+'%':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--accent2);">'+(a.hook>0?(a.hook*100).toFixed(1)+'%':'-')+'</td>'
+      +'<td style="font-family:var(--mono);color:var(--purple);">'+(a.hook_to_hold>0?(a.hook_to_hold*100).toFixed(1)+'%':'-')+'</td>'
+      +'<td style="font-family:var(--mono);color:var(--pink);">'+(a.hold_rate>0?(a.hold_rate*100).toFixed(1)+'%':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--green);">'+(a.cvr>0?a.cvr.toFixed(2)+'%':'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--warn);">'+(a.aov>0?'$'+a.aov.toFixed(0):'-')+'</td>'
       +'<td style="font-family:var(--mono);color:var(--muted2);">'+(a.atc>0?Math.round(a.atc):'-')+'</td>'
@@ -2097,17 +2113,19 @@ async function saveDrawerCustom(explicit){
 function renderVariations(rows,totalSpend){
   var byAd={};
   rows.forEach(function(r){
-    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,cvr_n:0,cvr_d:0,days:{}};
+    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,cvr_n:0,cvr_d:0,h2h_n:0,h2h_d:0,hold_n:0,hold_d:0,days:{}};
     byAd[r.ad].spend+=r.spend;byAd[r.ad].p+=r.purchases;byAd[r.ad].cv+=r.conv_val;byAd[r.ad].reach+=r.reach;byAd[r.ad].imp+=r.impressions;byAd[r.ad].atc+=r.atc;byAd[r.ad].lp_views+=r.lp_views;
     if(r.freq>0){byAd[r.ad].freq_n+=r.freq*r.impressions;byAd[r.ad].freq_d+=r.impressions;}
     if(r.hook_rate>0){byAd[r.ad].hook_n+=r.hook_rate*r.impressions;byAd[r.ad].imp_h+=r.impressions;}
+    if(r.hook_to_hold>0){byAd[r.ad].h2h_n+=r.hook_to_hold*r.impressions;byAd[r.ad].h2h_d+=r.impressions;}
+    if(r.hold_rate>0){byAd[r.ad].hold_n+=r.hold_rate*r.impressions;byAd[r.ad].hold_d+=r.impressions;}
     if(r.aov>0){byAd[r.ad].cv_sum+=r.aov;byAd[r.ad].cv_cnt++;}
     if(r.cvr_pct>0&&r.lp_views>0){byAd[r.ad].cvr_n+=r.cvr_pct*r.lp_views;byAd[r.ad].cvr_d+=r.lp_views;}
     byAd[r.ad].days[r.day]=true;
   });
   var ads=Object.keys(byAd).map(function(k){
     var a=byAd[k];
-    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
+    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,hook_to_hold:a.h2h_d>0?a.h2h_n/a.h2h_d:0,hold_rate:a.hold_d>0?a.hold_n/a.hold_d:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
   }).sort(function(a,b){return b.spend-a.spend;});
 
   var ranked=ads.slice().sort(function(a,b){return b.spend-a.spend;});
@@ -2143,6 +2161,8 @@ function renderVariations(rows,totalSpend){
       +'<div class="ad-metric">'+ml('ACV','Average Cart Value. Revenue ÷ purchases.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.acv>0?'$'+a.acv.toFixed(2):'-')+'</span></div>'
       +'<div class="ad-metric">'+ml('CVR','Purchases ÷ landing page views × 100.')+'<span class="ad-metric-val" style="color:var(--green);">'+(a.cvr>0?a.cvr.toFixed(2)+'%':'-')+'</span></div>'
       +'<div class="ad-metric">'+ml('Hook Rate','% who watched 3+ seconds.')+'<span class="ad-metric-val" style="color:var(--accent2);">'+(a.hook>0?(a.hook*100).toFixed(1)+'%':'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('Hook→Hold','% of 3s viewers who watched to 15s.')+'<span class="ad-metric-val" style="color:var(--purple);">'+(a.hook_to_hold>0?(a.hook_to_hold*100).toFixed(1)+'%':'-')+'</span></div>'
+      +'<div class="ad-metric">'+ml('Hold Rate','% of all impressions that watched 15s+.')+'<span class="ad-metric-val" style="color:var(--pink);">'+(a.hold_rate>0?(a.hold_rate*100).toFixed(1)+'%':'-')+'</span></div>'
       +'<div class="ad-metric">'+ml('AOV','Avg purchase value from Meta.')+'<span class="ad-metric-val" style="color:var(--warn);">'+(a.aov>0?'$'+a.aov.toFixed(0):'-')+'</span></div>'
       +'<div class="ad-metric">'+ml('Freq','Avg times each person saw this ad.')+'<span class="ad-metric-val" style="color:var(--pink);">'+(a.freq>0?a.freq.toFixed(2):'-')+'</span></div>'
       +'<div class="ad-metric">'+ml('CTR','Clicks ÷ impressions × 100.')+'<span class="ad-metric-val">'+(a.ctr>0?a.ctr.toFixed(2)+'%':'-')+'</span></div>'
