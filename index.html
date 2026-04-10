@@ -1325,13 +1325,13 @@ function getAdSets(){
   filteredData.forEach(function(r){
     var k=r.adSet;
     if(!by[k])by[k]={adSet:r.adSet,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,ctr_n:0,ctr_d:0,cvr_n:0,cvr_d:0,freq_n:0,freq_d:0,h2h_n:0,h2h_d:0,hold_n:0,hold_d:0,days:{},ads:{}};
-    by[k].spend+=r.spend;by[k].p+=r.purchases;by[k].cv+=r.conv_val;by[k].reach+=r.reach;by[k].imp+=r.impressions;by[k].atc+=r.atc;by[k].lp_views+=r.lp_views;
+    by[k].spend+=r.spend;by[k].p+=r.purchases;by[k].cv+=r.conv_val;by[k].reach+=r.reach;by[k].imp+=r.impressions;by[k].atc+=r.atc;by[k].lp_views+=r.lp_views;by[k].clicks=(by[k].clicks||0)+r.clicks;
     if(r.hook_rate>0){by[k].hook_n+=r.hook_rate*r.impressions;by[k].imp_h+=r.impressions;}
     if(r.aov>0){by[k].cv_sum+=r.aov;by[k].cv_cnt++;}
     // CTR: weighted by impressions
     if(r.ctr>0){by[k].ctr_n+=r.ctr*r.impressions;by[k].ctr_d+=r.impressions;}
     // Frequency: weighted by impressions
-    if(r.freq>0){by[k].freq_n+=r.freq*r.impressions;by[k].freq_d+=r.impressions;}
+    // freq calculated from imp/reach totals below
     // Hook to Hold & Hold Rate: weighted by impressions
     if(r.hook_to_hold>0){by[k].h2h_n+=r.hook_to_hold*r.impressions;by[k].h2h_d+=r.impressions;}
     if(r.hold_rate>0){by[k].hold_n+=r.hold_rate*r.impressions;by[k].hold_d+=r.impressions;}
@@ -1343,10 +1343,10 @@ function getAdSets(){
     var a=by[k],d=Object.keys(a.days).length;
     return{adSet:a.adSet,spend:a.spend,purchases:a.p,conv_val:a.cv,
       cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,
-      reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,
+      reach:a.reach,freq:a.reach>0?a.imp/a.reach:0,
       hook_to_hold:a.h2h_d>0?a.h2h_n/a.h2h_d:0,
       hold_rate:a.hold_d>0?a.hold_n/a.hold_d:0,
-      ctr:a.ctr_d>0?a.ctr_n/a.ctr_d:0,
+      ctr:a.imp>0?a.clicks/a.imp*100:0,
       hook:a.imp_h>0?a.hook_n/a.imp_h:0,
       cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,
       aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,
@@ -2113,11 +2113,12 @@ async function saveDrawerCustom(explicit){
 function renderVariations(rows,totalSpend){
   var byAd={};
   rows.forEach(function(r){
-    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,cvr_n:0,cvr_d:0,h2h_n:0,h2h_d:0,hold_n:0,hold_d:0,days:{}};
-    byAd[r.ad].spend+=r.spend;byAd[r.ad].p+=r.purchases;byAd[r.ad].cv+=r.conv_val;byAd[r.ad].reach+=r.reach;byAd[r.ad].imp+=r.impressions;byAd[r.ad].atc+=r.atc;byAd[r.ad].lp_views+=r.lp_views;
-    if(r.freq>0){byAd[r.ad].freq_n+=r.freq*r.impressions;byAd[r.ad].freq_d+=r.impressions;}
+    if(!byAd[r.ad])byAd[r.ad]={ad:r.ad,spend:0,p:0,cv:0,reach:0,imp:0,atc:0,lp_views:0,hook_n:0,imp_h:0,cv_sum:0,cv_cnt:0,freq_n:0,freq_d:0,cvr_n:0,cvr_d:0,h2h_n:0,h2h_d:0,hold_n:0,hold_d:0,ctr_n:0,ctr_d:0,days:{}};
+    byAd[r.ad].spend+=r.spend;byAd[r.ad].p+=r.purchases;byAd[r.ad].cv+=r.conv_val;byAd[r.ad].reach+=r.reach;byAd[r.ad].imp+=r.impressions;byAd[r.ad].atc+=r.atc;byAd[r.ad].lp_views+=r.lp_views;byAd[r.ad].clicks=(byAd[r.ad].clicks||0)+r.clicks;
+    // freq calculated from imp/reach totals below
     if(r.hook_rate>0){byAd[r.ad].hook_n+=r.hook_rate*r.impressions;byAd[r.ad].imp_h+=r.impressions;}
     if(r.hook_to_hold>0){byAd[r.ad].h2h_n+=r.hook_to_hold*r.impressions;byAd[r.ad].h2h_d+=r.impressions;}
+    if(r.ctr>0){byAd[r.ad].ctr_n+=r.ctr*r.impressions;byAd[r.ad].ctr_d+=r.impressions;}
     if(r.hold_rate>0){byAd[r.ad].hold_n+=r.hold_rate*r.impressions;byAd[r.ad].hold_d+=r.impressions;}
     if(r.aov>0){byAd[r.ad].cv_sum+=r.aov;byAd[r.ad].cv_cnt++;}
     if(r.cvr_pct>0&&r.lp_views>0){byAd[r.ad].cvr_n+=r.cvr_pct*r.lp_views;byAd[r.ad].cvr_d+=r.lp_views;}
@@ -2125,7 +2126,7 @@ function renderVariations(rows,totalSpend){
   });
   var ads=Object.keys(byAd).map(function(k){
     var a=byAd[k];
-    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.freq_d>0?a.freq_n/a.freq_d:0,ctr:a.imp>0?a.p/a.imp*100:0,atc:a.atc,cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,hook_to_hold:a.h2h_d>0?a.h2h_n/a.h2h_d:0,hold_rate:a.hold_d>0?a.hold_n/a.hold_d:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
+    return{ad:a.ad,spend:a.spend,p:a.p,cv:a.cv,cpa:a.p>0?a.spend/a.p:0,roas:a.spend>0?a.cv/a.spend:0,reach:a.reach,freq:a.reach>0?a.imp/a.reach:0,ctr:a.imp>0?(a.clicks||0)/a.imp*100:0,atc:a.atc,cvr:a.cvr_d>0?a.cvr_n/a.cvr_d:a.lp_views>0?a.p/a.lp_views*100:0,hook:a.imp_h>0?a.hook_n/a.imp_h:0,hook_to_hold:a.h2h_d>0?a.h2h_n/a.h2h_d:0,hold_rate:a.hold_d>0?a.hold_n/a.hold_d:0,aov:a.cv_cnt>0?a.cv_sum/a.cv_cnt:0,days:Object.keys(a.days).length,spendPct:totalSpend>0?a.spend/totalSpend*100:0,acv:a.p>0?a.cv/a.p:0};
   }).sort(function(a,b){return b.spend-a.spend;});
 
   var ranked=ads.slice().sort(function(a,b){return b.spend-a.spend;});
